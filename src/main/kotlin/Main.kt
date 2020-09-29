@@ -1,14 +1,21 @@
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
 import org.ejml.simple.SimpleMatrix
 import kotlin.math.pow
 import kotlin.random.Random
 
-const val MAX_X = 100.0
+const val MAX_X = 1000.0
 const val MIN_X = 0.0
 const val N = 100000
-const val h = 0.000000000000001 // small number..
+const val h = 0.00000001 // small number..
+const val learningRateRate = 1.1
+const val epochs = 2000
 
 fun main() {
-    var m = randMatrix(2, 3, -2.0, 2.0)
+    var m = randMatrix(2, 3, 0.0, 1.0)
     val f = { x: SimpleMatrix ->
         val y = SimpleMatrix(x.numRows(), x.numCols())
         y[0,0] = x[0,0] * x[2,0] + x[2,0]
@@ -17,31 +24,44 @@ fun main() {
         y
     }
 
-    val learningRate = 0.01
+    Random(System.currentTimeMillis())
 
-    m[0,0] = 54.0
-    m[0,1] = 1.8
-    m[0,2] = 5.0
-    m[1,0] = 7.9
-    m[1,1] = 16.2
-    m[1,2] = 0.0
+    var learningRate = 0.0001
+    var prevG = SimpleMatrix(m.numElements,1)
 
     println("m: $m")
-    for (i in 0..200) {
+    for (i in 0 until epochs) {
         val g = gradient(m, f)
+        val gvec = SimpleMatrix().create(g.numElements, 1) { e -> g[e] }
+        if (prevG.dot(gvec) < 0)
+            learningRate *= 1.0 / learningRateRate
+        prevG = gvec
         m = m.minus(g.scale(learningRate))
+        m = m.divide(m.normF())
         println("m: $m")
         println("Gradient: $g")
         println("Cost: " + cost(m, f))
+        println("Learning rate: $learningRate")
     }
     println(m)
 }
 
 fun gradient(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): SimpleMatrix {
     val gradient = SimpleMatrix(m.numRows(), m.numCols())
+    val mutex = Mutex()
 
-    for (elem in 0 until m.numElements) {
-        gradient[elem] = derivative(m, f, elem)
+    runBlocking {
+        val jobs = (0 until m.numElements).map {elem ->
+            GlobalScope.launch {
+                val g = derivative(m, f, elem)
+
+                mutex.lock()
+                gradient[elem] = g
+                mutex.unlock()
+            }
+        }
+
+        jobs.joinAll()
     }
 
     return gradient
@@ -70,7 +90,7 @@ fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
     var average = 0.0
 
     for (i in 0..N) {
-        x = randMatrix(m.numCols(), 1, 0.0, MAX_X)
+        x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
 
         average += specificCost(m, f, x).pow(2.0)
     }
@@ -97,4 +117,22 @@ fun randMatrix(numRows: Int, numCols: Int, from: Double, to: Double): SimpleMatr
     }
 
     return m
+}
+
+fun SimpleMatrix.create(rows: Int, columns: Int, initializer: (Int, Int) -> Double) : SimpleMatrix {
+    val s = SimpleMatrix(rows, columns)
+    for(i in 0 until s.numRows()) {
+        for(j in 0 until s.numCols()) {
+            s[i, j] = initializer(i ,j)
+        }
+    }
+    return s
+}
+
+fun SimpleMatrix.create(rows: Int, columns: Int, initializer: (Int) -> Double) : SimpleMatrix {
+    val s = SimpleMatrix(rows, columns)
+    for(i in 0 until s.numElements) {
+        s[i] = initializer(i)
+    }
+    return s
 }
