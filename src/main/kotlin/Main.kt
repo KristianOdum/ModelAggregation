@@ -4,15 +4,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import org.ejml.simple.SimpleMatrix
+import kotlin.math.abs
 import kotlin.math.pow
+import kotlin.math.sqrt
 import kotlin.random.Random
 
-const val MAX_X = 1000.0
+const val MAX_X = 100000000.0
 const val MIN_X = 0.0
 const val N = 100000
 const val h = 0.00000001 // small number..
 const val learningRateRate = 1.1
 const val epochs = 2000
+val gr = (sqrt(5.0) + 1.0) / 2.0
+const val tolerance = 0.000000000000001
+var gss_b = 10.0
 
 fun main() {
     var m = randMatrix(2, 3, 0.0, 1.0)
@@ -26,24 +31,38 @@ fun main() {
 
     Random(System.currentTimeMillis())
 
-    var learningRate = 0.0001
-    var prevG = SimpleMatrix(m.numElements,1)
-
     println("m: $m")
     for (i in 0 until epochs) {
-        val g = gradient(m, f)
-        val gvec = SimpleMatrix().create(g.numElements, 1) { e -> g[e] }
-        if (prevG.dot(gvec) < 0)
-            learningRate *= 1.0 / learningRateRate
-        prevG = gvec
-        m = m.minus(g.scale(learningRate))
+        var g = gradient(m, f)
+        g = g.divide(g.normF())
+        val alpha = alpha { scaling -> cost(m.plus(g.scale(-scaling)), f) }
+
+        m = m.minus(g.scale(alpha))
         m = m.divide(m.normF())
         println("m: $m")
         println("Gradient: $g")
         println("Cost: " + cost(m, f))
-        println("Learning rate: $learningRate")
     }
     println(m)
+}
+
+fun alpha(cost: (Double) -> Double): Double {
+    var a = 0.0
+    var b = gss_b
+    var c = b - (b - a) / gr
+    var d = a + (b - a) / gr
+
+    while(abs(c - d) > tolerance) {
+        if (cost(c) < cost(d))
+            b = d
+        else
+            a = c
+
+        c = b - (b - a) / gr
+        d = a + (b - a) / gr
+    }
+
+    return (a + b) / 2
 }
 
 fun gradient(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): SimpleMatrix {
@@ -119,8 +138,8 @@ fun randMatrix(numRows: Int, numCols: Int, from: Double, to: Double): SimpleMatr
     return m
 }
 
-fun SimpleMatrix.create(rows: Int, columns: Int, initializer: (Int, Int) -> Double) : SimpleMatrix {
-    val s = SimpleMatrix(rows, columns)
+fun SimpleMatrix.create(initializer: (Int, Int) -> Double) : SimpleMatrix {
+    val s = SimpleMatrix(this.numRows(), this.numCols())
     for(i in 0 until s.numRows()) {
         for(j in 0 until s.numCols()) {
             s[i, j] = initializer(i ,j)
@@ -129,10 +148,19 @@ fun SimpleMatrix.create(rows: Int, columns: Int, initializer: (Int, Int) -> Doub
     return s
 }
 
-fun SimpleMatrix.create(rows: Int, columns: Int, initializer: (Int) -> Double) : SimpleMatrix {
-    val s = SimpleMatrix(rows, columns)
+fun SimpleMatrix.create(initializer: (Int) -> Double) : SimpleMatrix {
+    val s = SimpleMatrix(this.numRows(), this.numCols())
     for(i in 0 until s.numElements) {
         s[i] = initializer(i)
     }
     return s
+}
+
+fun SimpleMatrix.allElements(): Iterable<Double> {
+    val list = mutableListOf<Double>()
+
+    for (i in 0 until this.numElements)
+        list.add(this[i])
+
+    return list
 }
