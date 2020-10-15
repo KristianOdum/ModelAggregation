@@ -22,11 +22,14 @@
             <id>mavenCentral</id>
             <url>https://repo1.maven.org/maven2/</url>
         </repository>
+        <repository>
+            <id>lets-plot-maven</id>
+            <url>https://dl.bintray.com/jetbrains/lets-plot-maven/</url>
+        </repository>
     </repositories>
 
     <build>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
-        <testSourceDirectory>src/test/kotlin</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
@@ -75,5 +78,11 @@
             <version>0.31</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.jetbrains.lets-plot</groupId>
+            <artifactId>lets-plot-common</artifactId>
+            <version>1.5.2</version>
+        </dependency>
+
     </dependencies>
 </project>
