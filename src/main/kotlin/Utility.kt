@@ -6,30 +6,34 @@ import kotlin.random.Random
 const val MAX_X = 1000.0
 const val MIN_X = 0.0
 
-fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
+fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, tolerance: Double = 0.00001): Double {
     var x: SimpleMatrix
+    val mbar = m.rightInverse()
 
-    return untilAverageTolerance(1.0) {
+    return untilAverageTolerance(tolerance) {
         x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
 
-        specificCost(m, f, x).pow(2.0)
+        specificCost(m, mbar, f, x).pow(2.0)
     }
 }
 
-fun untilAverageTolerance(tolerance: Double, action: () -> Double): Double {
+fun     untilAverageTolerance(tolerance: Double = 0.000000000001, clusterSize: Int = 50, action: () -> Double): Double {
     val averages = mutableListOf<Double>()
     var i = 0
 
-    while (averages.size < 5 || abs(averages.dropLast(1).map { it - averages.last() }.maxOrNull()!!) > tolerance) {
-        val e = action()
-        val na = if (averages.isEmpty()) e else
-                            averages.last() * (i.toDouble() / (i + 1)) + e / (i + 1)
+    while (i < 100 || averages.dropLast(1).map { abs(it - averages.last()) }.maxOrNull()!! > abs(averages.last() * tolerance)) {
 
-        averages.add(na)
+        var clusterAverage = 0.0
+        repeat(clusterSize) {
+            val e = action()
+            clusterAverage = clusterAverage * (it.toDouble() / (it + 1)) + e / (it + 1)
+        }
 
         if (averages.size > 5) {
-            //println("${averages.last()}\t${averages.dropLast(1).map { abs(it - averages.last()) }.maxOrNull()!!}")
-            averages.removeAt(0)
+            for (i in 0 until averages.size - 1)
+                averages[i] = averages[i+1]
+        } else {
+            averages.add(clusterAverage)
         }
 
         i++
@@ -38,8 +42,8 @@ fun untilAverageTolerance(tolerance: Double, action: () -> Double): Double {
     return averages.last()
 }
 
-fun specificCost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, x: SimpleMatrix) =
-        m.mult(f(x)).minus(m.mult(f(m.rightInverse().mult(m.mult(x))))).normF()
+fun specificCost(m: SimpleMatrix, mbar: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, x: SimpleMatrix) =
+        m.mult(f(x)).minus(m.mult(f(mbar.mult(m.mult(x))))).normF()
 
 fun SimpleMatrix.withSet(i: Int, value: Double): SimpleMatrix {
     val new = SimpleMatrix(this)
