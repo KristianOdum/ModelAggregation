@@ -22,7 +22,10 @@ fun main() {
     //Random(System.currentTimeMillis())
     val sir = RandomSIR(8)
 
-    val m = gradientDescent(sir.function, ::cost, sir.functionsCount, sir.functionsCount - 1, 100)
+    val pso = ParticleSwarmOptimization(sir.function, sir.functionsCount, sir.functionsCount-1, 10)
+    var x = randMatrix(23,24,-1.0,1.0)
+    for(i in 0..100)
+        println(cost(x,sir.function))
 
-    println(cost(m, sir.function))
+    //println(cost(pso.run(20), sir.function))
 }
