@@ -11,7 +11,7 @@ import kotlin.math.pow
 import kotlin.math.sqrt
 import kotlin.random.Random
 
-const val h = 0.000001 // small number..
+const val h = 0.00001 // small number..
 val gr = (sqrt(5.0) + 1.0) / 2.0
 const val tolerance = 0.000000000001
 var gss_b = 0.1

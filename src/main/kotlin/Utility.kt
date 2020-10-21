@@ -6,22 +6,22 @@ import kotlin.random.Random
 const val MAX_X = 1000.0
 const val MIN_X = 0.0
 
-fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, tolerance: Double = 0.00001): Double {
+fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
     var x: SimpleMatrix
     val mbar = m.rightInverse()
 
-    return untilAverageTolerance(tolerance) {
+    return untilAverageTolerance {
         x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
 
         specificCost(m, mbar, f, x).pow(2.0)
     }
 }
 
-fun     untilAverageTolerance(tolerance: Double = 0.000000000001, clusterSize: Int = 50, action: () -> Double): Double {
+fun untilAverageTolerance(tolerance: Double = 1.0E-5, clusterSize: Int = 50, action: () -> Double): Double {
     val averages = mutableListOf<Double>()
     var i = 0
 
-    while (i < 100 || averages.dropLast(1).map { abs(it - averages.last()) }.maxOrNull()!! > abs(averages.last() * tolerance)) {
+    while (averages.size < 5 || averages.dropLast(1).map { abs(it - averages.last()) }.maxOrNull()!! > abs(averages.last() * tolerance)) {
 
         var clusterAverage = 0.0
         repeat(clusterSize) {
@@ -29,9 +29,11 @@ fun     untilAverageTolerance(tolerance: Double = 0.000000000001, clusterSize: I
             clusterAverage = clusterAverage * (it.toDouble() / (it + 1)) + e / (it + 1)
         }
 
-        if (averages.size > 5) {
-            for (i in 0 until averages.size - 1)
-                averages[i] = averages[i+1]
+        if (averages.size >= 5) {
+            for (j in 0 until averages.size - 1)
+                averages[j] = averages[j+1]
+            averages[4] = averages[3] * (i * clusterSize).toDouble() / (i * clusterSize + 1)
+                          + clusterAverage / (i * clusterSize + 1)
         } else {
             averages.add(clusterAverage)
         }
@@ -57,7 +59,7 @@ fun randMatrix(numRows: Int, numCols: Int, from: Double, to: Double): SimpleMatr
     val m = SimpleMatrix(numRows, numCols)
 
     for (i in 0 until m.numElements) {
-        m[i] = Random.nextDouble(from, to)
+        m[i] = randomP.nextDouble(from, to)
     }
 
     return m
