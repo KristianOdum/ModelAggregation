@@ -1,9 +1,3 @@
-import PSO.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
 import org.ejml.simple.SimpleMatrix
 import kotlin.random.Random
 
@@ -24,5 +18,5 @@ fun main() {
 
     val m = gradientDescent(sir.function, ::cost, sir.functionsCount, sir.functionsCount - 1, 100)
 
-    println(cost(m, sir.function))
+    //println(cost(m, sir.function))
 }

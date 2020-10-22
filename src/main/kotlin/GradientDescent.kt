@@ -5,16 +5,13 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import org.ejml.simple.SimpleMatrix
 import java.awt.Color
-import javax.swing.plaf.ColorUIResource
 import kotlin.math.abs
-import kotlin.math.pow
 import kotlin.math.sqrt
-import kotlin.random.Random
 
 const val h = 0.00001 // small number..
 val gr = (sqrt(5.0) + 1.0) / 2.0
-const val tolerance = 0.000000000001
-var gss_b = 0.1
+const val gss_tolerance = 1.0E-20
+var gss_b = 0.5
 
 fun gradientDescent(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (SimpleMatrix) -> SimpleMatrix) -> Double, n: Int, nhat: Int, epochs: Int): SimpleMatrix {
     var m = randMatrix(nhat, n, 0.0, 1.0)
@@ -24,17 +21,16 @@ fun gradientDescent(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (Sim
         var g = gradient(m, f)
         g = g.divide(g.normF())
 
-        println("Bound? ")
-        gss_b = readLine()!!.toDouble()
-        println("ok")
+        gss_b /= 10
 
+        /*
         val dataPoints = mutableListOf<Pair<Double, Double>>()
 
         runBlocking {
             val dataPointMutex = Mutex()
-            val jobs = (0 until 1000).map {
+            val jobs = (0 until 100).map {
                 GlobalScope.launch {
-                    val d = gss_b * it.toDouble() / 1000
+                    val d = gss_b * it.toDouble() / 100
                     val c = cost(m.plus(g.scale(-d)), f)
 
                     dataPointMutex.lock()
@@ -47,32 +43,25 @@ fun gradientDescent(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (Sim
         dataPoints.sortBy { it.first }
 
         val alphaPlot = Plot.data()
-
+*/
         val alpha = alpha { scaling ->
-            val c = cost(m.plus(g.scale(-scaling)), f)
-            alphaPlot.xy(scaling, c)
-            c
+            cost(m.plus(g.scale(-scaling)), f)
         }
 
         println("alpha: $alpha")
 
-        m = m.minus(g.scale(alpha))
-        m = m.divide(m.normF())
+        m = m.minus(g.scale(alpha)).colNorm()
         println("m: $m")
         println("Gradient: $g")
-        val cost = cost(m, f)
+        //val cost = cost(m, f)
         println("Cost: " + cost)
-
+/*
         val plot = Plot.plot(Plot.plotOpts()
                 .title("Cost function"))
                 .series("data", Plot.data().xy(dataPoints.map { it.first }, dataPoints.map { it.second }), Plot.seriesOpts())
-                .series("search", alphaPlot, Plot.seriesOpts().color(Color.GREEN).marker(Plot.Marker.COLUMN).line(Plot.Line.NONE))
                 .series("alpha", Plot.data().xy(alpha, cost), Plot.seriesOpts().color(Color.RED).marker(Plot.Marker.DIAMOND))
 
-        plot.save("plot$i", "png")
-
-
-
+        plot.save("plot$i", "png") */
     }
     return m
 }
@@ -86,15 +75,17 @@ fun alpha(cost: (Double) -> Double): Double {
     var fc = cost(c)
     var fd = cost(d)
 
-    while(abs(c - d) > tolerance) {
+    while(abs(c - d) > gss_tolerance) {
         if (fc < fd) {
             b = d
             d = c
+            fd = fc
             c = b - (b - a) / gr
             fc = cost(c)
         } else {
             a = c
             c = d
+            fc = fd
             d = a + (b - a) / gr
             fd = cost(d)
         }
@@ -129,11 +120,10 @@ fun gradient(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): SimpleMatrix {
 
 fun derivative(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, e: Int): Double {
     var x: SimpleMatrix
-    val mp = m.withSet(e, m[e] + h)
+    val mp = m.withSet(e, m[e] + h).colNorm()
     val mpbar = mp.rightInverse()
-    val mn = m.withSet(e, m[e] - h)
+    val mn = m.withSet(e, m[e] - h).colNorm()
     val mnbar = mn.rightInverse()
-    var slope = 0.0
 
     return untilAverageTolerance {
         x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
