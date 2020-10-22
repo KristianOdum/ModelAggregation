@@ -32,7 +32,6 @@ fun untilAverageTolerance(tolerance: Double = 1.0E-3, clusterSize: Int = 5000, a
         if (averages.size >= 5) {
             for (j in 0 until averages.size - 1)
                 averages[j] = averages[j+1]
-
             averages[4] = averages[3] * i.toDouble() / (i + 1) + clusterAverage / (i + 1)
         } else {
             val na = if (averages.size > 1) averages.last() * i.toDouble() / (i + 1) + clusterAverage / (i + 1) else clusterAverage
@@ -41,7 +40,7 @@ fun untilAverageTolerance(tolerance: Double = 1.0E-3, clusterSize: Int = 5000, a
 
         i++
     }
-
+    println(i * clusterSize)
     return averages.last()
 }
 

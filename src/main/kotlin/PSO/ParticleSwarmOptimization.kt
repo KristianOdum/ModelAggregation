@@ -11,11 +11,9 @@ import org.ejml.simple.SimpleMatrix
 import randMatrix
 import java.lang.Math.abs
 
-var omega = 0.2
-var phi_p = 0.2
-var phi_g = 0.6
-
-var lr = 0.5
+var omega = 0.6
+var phi_p = 2.05
+var phi_g = 2.05
 
 class ParticleSwarmOptimization(val function: (SimpleMatrix) -> SimpleMatrix, val dimensions: Int, val reducedDimensions: Int, val particleCount: Int = 10) {
     class Particle(n: Int, nHat: Int, bounds: ClosedFloatingPointRange<Double>) {
@@ -30,7 +28,7 @@ class ParticleSwarmOptimization(val function: (SimpleMatrix) -> SimpleMatrix, va
             val r_g = randMatrix(x.numRows(), x.numCols(), 0.0, 1.0)
 
             v = v.scale(omega) + (bestX.minus(x)).hadamard(r_p).scale(phi_p) + (globalBest.minus(x)).hadamard(r_g).scale(phi_g)
-            x += v.scale(lr)
+            x += v
         }
 
         var bestX = x
@@ -45,6 +43,8 @@ class ParticleSwarmOptimization(val function: (SimpleMatrix) -> SimpleMatrix, va
             val (x, c) = particles.map { Pair(it.x, cost(it.x, function)) }.minByOrNull { it.second }!!
             globalBestX = x
             globalBestCost = c
+            println("Starting global best! Cost: $globalBestCost")
+            println("x: $x")
 
             particles.forEach { it.bestCost = cost(it.x, function) }
         }
@@ -65,6 +65,8 @@ class ParticleSwarmOptimization(val function: (SimpleMatrix) -> SimpleMatrix, va
                             if (xCost < globalBestCost) {
                                 globalBestCost = xCost
                                 globalBestX = p.x
+                                println("New global best! Cost: $globalBestCost")
+                                println("X: $globalBestX")
                             }
                             mutex.unlock()
                         }
@@ -78,8 +80,11 @@ class ParticleSwarmOptimization(val function: (SimpleMatrix) -> SimpleMatrix, va
 
     fun run(epochs: Int): SimpleMatrix {
         val swarm = Swarm(List(particleCount) { Particle(dimensions, reducedDimensions, (-1.0).rangeTo(1.0))}, function)
+        var t = 1
         repeat(epochs) {
+            println("--- Iteration $t ---")
             swarm.iterate()
+            t++
         }
 
         return swarm.globalBestX
