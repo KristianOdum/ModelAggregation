@@ -1,3 +1,4 @@
+import PSO.ParticleSwarmOptimization
 import org.ejml.simple.SimpleMatrix
 import kotlin.random.Random
 
@@ -10,12 +11,18 @@ val toyF = { x: SimpleMatrix ->
     y
 }
 
-val randomP = Random(0)
+val randomP = Random(System.currentTimeMillis())
 
 fun main() {
     //Random(System.currentTimeMillis())
-    val sir = RandomSIR(8)
+    val sir = RandomSIR(3)
 
-    gradientDescent(sir.function, ::cost, sir.functionsCount, sir.functionsCount - 1, 100)
+    val pso = ParticleSwarmOptimization(sir.function, sir.functionsCount, sir.functionsCount-1, 20)
 
+    for(i in 0..50){
+        print("[")
+        pso.run(2500)
+        println("],")
+    }
+    //println(cost(pso.run(1000), sir.function))
 }
