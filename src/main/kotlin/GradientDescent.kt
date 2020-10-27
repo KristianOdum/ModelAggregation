@@ -11,7 +11,7 @@ import kotlin.math.sqrt
 const val h = 0.00001 // small number..
 val gr = (sqrt(5.0) + 1.0) / 2.0
 const val gss_tolerance = 1.0E-20
-var gss_b = 0.5
+var gss_b = 1.0
 
 fun gradientDescent(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (SimpleMatrix) -> SimpleMatrix) -> Double, n: Int, nhat: Int, epochs: Int): SimpleMatrix {
     var m = randMatrix(nhat, n, 0.0, 1.0)
@@ -21,7 +21,7 @@ fun gradientDescent(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (Sim
         var g = gradient(m, f)
         g = g.divide(g.normF())
 
-        gss_b /= 10
+        gss_b /= 2
 
         /*
         val dataPoints = mutableListOf<Pair<Double, Double>>()
@@ -53,7 +53,7 @@ fun gradientDescent(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (Sim
         m = m.minus(g.scale(alpha)).colNorm()
         println("m: $m")
         println("Gradient: $g")
-        //val cost = cost(m, f)
+        val cost = cost(m, f)
         println("Cost: " + cost)
 /*
         val plot = Plot.plot(Plot.plotOpts()

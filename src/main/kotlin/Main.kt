@@ -16,4 +16,6 @@ fun main() {
     //Random(System.currentTimeMillis())
     val sir = RandomSIR(8)
 
+    gradientDescent(sir.function, ::cost, sir.functionsCount, sir.functionsCount - 1, 100)
+
 }
