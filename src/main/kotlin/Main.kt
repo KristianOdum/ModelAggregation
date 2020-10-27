@@ -1,9 +1,3 @@
-import PSO.*
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
 import org.ejml.simple.SimpleMatrix
 import kotlin.random.Random
 
@@ -22,7 +16,6 @@ fun main() {
     //Random(System.currentTimeMillis())
     val sir = RandomSIR(8)
 
-    val m = gradientDescent(sir.function, ::cost, sir.functionsCount, sir.functionsCount - 1, 100)
+    gradientDescent(sir.function, ::cost, sir.functionsCount, sir.functionsCount - 1, 100)
 
-    println(cost(m, sir.function))
 }

@@ -32,15 +32,14 @@ fun untilAverageTolerance(tolerance: Double = 1.0E-2, clusterSize: Int = 50, act
         if (averages.size >= 5) {
             for (j in 0 until averages.size - 1)
                 averages[j] = averages[j+1]
-            averages[4] = averages[3] * (i * clusterSize).toDouble() / (i * clusterSize + 1)
-                          + clusterAverage / (i * clusterSize + 1)
+            averages[4] = averages[3] * i.toDouble() / (i + 1) + clusterAverage / (i + 1)
         } else {
-            averages.add(clusterAverage)
+            val na = if (averages.size > 1) averages.last() * i.toDouble() / (i + 1) + clusterAverage / (i + 1) else clusterAverage
+            averages.add(na)
         }
 
         i++
     }
-
     return averages.last()
 }
 
@@ -113,3 +112,29 @@ fun ClosedFloatingPointRange<Double>.iterator(step: (Double) -> Double): Iterato
     }
 }
 
+fun SimpleMatrix.normalize(): SimpleMatrix = this.create { i, j -> this[i,j] / this.normF() }
+
+fun SimpleMatrix.rowNorm(): SimpleMatrix {
+    val n = SimpleMatrix(this)
+    for (i in 0 until this.numRows()) {
+        val total = this.rowVector(i).allElements().sum()
+        for (j in 0 until this.numCols()) {
+            n[i,j] = n[i,j] / total
+        }
+    }
+    return  n
+}
+
+fun SimpleMatrix.colNorm(): SimpleMatrix {
+    val n = SimpleMatrix(this)
+    for (j in 0 until numCols()) {
+        val total = colVector(j).allElements().sum()
+        for (i in 0 until numRows()) {
+            n[i,j] = n[i,j] / total
+        }
+    }
+    return  n
+}
+
+fun SimpleMatrix.rowVector(r: Int): SimpleMatrix = SimpleMatrix(1, numCols()).create { i -> this[r, i] }
+fun SimpleMatrix.colVector(c: Int): SimpleMatrix = SimpleMatrix(numRows(), 1).create {i -> this[i, c]}
