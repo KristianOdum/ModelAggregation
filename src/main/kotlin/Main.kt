@@ -10,12 +10,12 @@ val toyF = { x: SimpleMatrix ->
     y
 }
 
-val randomP = Random(0)
+val randomP = Random(System.currentTimeMillis())
 
 fun main() {
-    //Random(System.currentTimeMillis())
-    val sir = RandomSIR(8)
+    val sir = RandomSIR(3)
 
-    gradientDescent(sir.function, ::cost, sir.functionsCount, sir.functionsCount - 1, 100)
+    val m = gradientDescent(sir.function, ::cost, sir.functionsCount, sir.functionsCount - 1, 100)
 
+    println(m)
 }
