@@ -1,5 +1,6 @@
 import PSO.ParticleSwarmOptimization
 import org.ejml.simple.SimpleMatrix
+import java.io.File
 import kotlin.random.Random
 
 
@@ -19,10 +20,10 @@ fun main() {
 
     val pso = ParticleSwarmOptimization(sir.function, sir.functionsCount, sir.functionsCount-1, 20)
 
-    for(i in 0..50){
-        print("[")
-        pso.run(2500)
-        println("],")
+    File("data1.txt").delete()
+
+    for(i in 0..499){
+        println("$i")
+        pso.run(3000)
     }
-    //println(cost(pso.run(1000), sir.function))
 }

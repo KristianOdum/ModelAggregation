@@ -10,13 +10,15 @@ import kotlinx.coroutines.sync.Mutex
 import org.ejml.simple.SimpleMatrix
 import randMatrix
 import rowNorm
+import java.io.File
 import java.lang.Math.abs
+import java.lang.StringBuilder
 
 var lb = 0.0
 var ub = 1.0
 var maxV = (ub - lb) / 100.0
-var maxOmega = 0.8
-var minOmega = 0.5
+var maxOmega = 0.9
+var minOmega = 0.4
 var phi_p = 1.6
 var phi_g = 1.6
 
@@ -93,15 +95,18 @@ class ParticleSwarmOptimization(val function: (SimpleMatrix) -> SimpleMatrix, va
 
     fun run(epochs: Int): SimpleMatrix {
         var i = 1
+        val s = StringBuilder()
         val swarm = Swarm(List(particleCount) { Particle(dimensions, reducedDimensions, lb.rangeTo(ub), i++)}, function, epochs)
-        print("[0,${swarm.globalBestCost}],")
+
+        s.append("${swarm.globalBestCost} ")
         repeat(epochs) {
-            //println("--- Iteration ${swarm.t} ---")
+            println("--- Iteration ${swarm.t} ---")
             swarm.iterate()
-            print("[${swarm.t - 1},${swarm.globalBestCost}]")
-            if(swarm.t <= epochs)
-                print(",")
+            println(swarm.globalBestCost)
+            s.append("${swarm.globalBestCost} ")
         }
+        s.appendLine()
+        File("data1.txt").appendText(s.toString())
 
         return swarm.globalBestX
     }

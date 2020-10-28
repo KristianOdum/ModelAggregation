@@ -17,7 +17,7 @@ fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
     }
 }
 
-fun untilAverageTolerance(tolerance: Double = 1.0E-1, clusterSize: Int = 50, action: () -> Double): Double {
+fun untilAverageTolerance(tolerance: Double = 1.0E-2, clusterSize: Int = 50, action: () -> Double): Double {
     val averages = mutableListOf<Double>()
     var i = 0
 
