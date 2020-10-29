@@ -1,4 +1,5 @@
 import org.ejml.simple.SimpleMatrix
+import java.io.File
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -138,6 +139,20 @@ fun SimpleMatrix.colNorm(): SimpleMatrix {
 
 fun SimpleMatrix.rowVector(r: Int): SimpleMatrix = SimpleMatrix(1, numCols()).create { i -> this[r, i] }
 fun SimpleMatrix.colVector(c: Int): SimpleMatrix = SimpleMatrix(numRows(), 1).create {i -> this[i, c]}
+
+
+fun Plot.saveWithExt(fileName: String = "plot") {
+    for (ext in (0..50).withIndex()) {
+        val path = fileName + ext.value.toString() + ".png"
+        val file = File(path)
+        val exists = file.exists()
+
+        if (!exists) {
+            this.save(path.removeSuffix(".png"), "png")
+            return
+        }
+    }
+}
 
 data class LUPair(val L: SimpleMatrix, val U: SimpleMatrix)
 

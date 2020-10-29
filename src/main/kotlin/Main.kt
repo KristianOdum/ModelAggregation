@@ -18,5 +18,4 @@ val global_m = randMatrix(global_sir.functionsCount -1, global_sir.functionsCoun
 
 fun main() {
     println(gradientDescent(global_sir.function, ::cost, global_sir.functionsCount, global_sir.functionsCount - 1, 100))
-
 }
