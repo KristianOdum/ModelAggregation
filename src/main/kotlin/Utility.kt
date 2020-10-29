@@ -174,7 +174,7 @@ fun SimpleMatrix.LUDecomposition(): LUPair {
 fun SimpleMatrix.MGSON(m: SimpleMatrix) {
     val u = SimpleMatrix(m)
 
-    u =
+    u.setRow(0, 0)
     for (r in 1 until m.numRows()) {
 
     }
@@ -184,9 +184,9 @@ fun SimpleMatrix.project(v: SimpleMatrix, u: SimpleMatrix): SimpleMatrix {
     return u.scale(u.dot(v) / u.dot(u))
 }
 
-fun SimpleMatrix.setRow(matrix: SimpleMatrix, row: Int, vector: SimpleMatrix) {
-    val final = SimpleMatrix(matrix)
-    for (col in 0 until matrix.numCols()) {
+fun SimpleMatrix.setRow(row: Int, vector: SimpleMatrix) {
+    val final = SimpleMatrix(this)
+    for (col in 0 until numCols()) {
         final[row, col] = vector[col, row]
     }
 }
