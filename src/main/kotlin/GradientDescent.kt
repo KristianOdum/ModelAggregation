@@ -36,7 +36,7 @@ fun gradientDescentRMSProp(f: (SimpleMatrix) -> SimpleMatrix, epochs: Int, learn
 
         lRate *= 0.99
 
-        if ((epocs - i) == sprint) {
+        if ((epochs - i) == sprint) {
             m = bestM
         }
 
@@ -45,12 +45,12 @@ fun gradientDescentRMSProp(f: (SimpleMatrix) -> SimpleMatrix, epochs: Int, learn
             m[j] += -(lRate / sqrt(gradSquared[j])) * g[j]
         }
 
-        val c = cost(m, f, tolerance)
+        val c = cost(m, f)
         if (c < bestC) {
             bestC = c
             bestM = m
         }
-        print("\r${epocs - i} - $c")
+        print("\r${epochs - i} - $c")
         if (i > 1000)
             plotData.xy(i.toDouble(), c)
         m = m.rowNorm()
