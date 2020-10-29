@@ -17,10 +17,10 @@ import java.lang.StringBuilder
 var lb = 0.0
 var ub = 1.0
 var maxV = (ub - lb) / 100.0
-var maxOmega = 0.9
+var maxOmega = 0.7
 var minOmega = 0.4
-var phi_p = 1.6
-var phi_g = 1.6
+var phi_p = 2.05
+var phi_g = 2.05
 
 class ParticleSwarmOptimization(val function: (SimpleMatrix) -> SimpleMatrix, val dimensions: Int, val reducedDimensions: Int, val particleCount: Int = 10) {
     class Particle(n: Int, nHat: Int, bounds: ClosedFloatingPointRange<Double>, var id: Int) {
@@ -100,14 +100,13 @@ class ParticleSwarmOptimization(val function: (SimpleMatrix) -> SimpleMatrix, va
 
         s.append("${swarm.globalBestCost} ")
         repeat(epochs) {
-            println("--- Iteration ${swarm.t} ---")
+            //Print iteration
             swarm.iterate()
-            println(swarm.globalBestCost)
+            //Print globalbest
             s.append("${swarm.globalBestCost} ")
         }
         s.appendLine()
-        File("data1.txt").appendText(s.toString())
-
+        File("dataphi2.txt").appendText(s.toString())
         return swarm.globalBestX
     }
 }

@@ -20,9 +20,9 @@ fun main() {
 
     val pso = ParticleSwarmOptimization(sir.function, sir.functionsCount, sir.functionsCount-1, 20)
 
-    File("data1.txt").delete()
+    File("dataphi2.txt").delete()
 
-    for(i in 0..499){
+    for(i in 0..99){
         println("$i")
         pso.run(3000)
     }
