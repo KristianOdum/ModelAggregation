@@ -18,7 +18,7 @@ var gss_b = 1.0
 val plotAlpha = false
 
 fun gradientDescentRMSProp(f: (SimpleMatrix) -> SimpleMatrix, epochs: Int): Plot.Data {
-    var m = global_m.copy()
+    var m = global_m.copy().rowNorm()
     val plotData = Plot.data()
 
     val prevGradSquared = m.create { _ -> 0.0 }
@@ -26,16 +26,29 @@ fun gradientDescentRMSProp(f: (SimpleMatrix) -> SimpleMatrix, epochs: Int): Plot
     val beta = 0.9
 
     var tolerance = 1.0E5
-    var lRate = 1.0E-3
-    var interval = Int.MAX_VALUE
+    var lRate = 1.0E-4
+    var interval = 100
     var bestC = Double.MAX_VALUE
     var bestM = m.copy()
-    var sprint = (epochs.toDouble() / 5.0).toInt()
+    val sprint = (epochs.toDouble() / 5.0).toInt()
 
+    val averagesCount = 20
+    val averages = Array(averagesCount) { 0.0 }
+    val averageData = Plot.data()
+
+    val firstCost = cost(m, f, 1.0E-5)
+    val firstM = m.copy()
+    averages[0] = firstCost
+
+    try {
     for (i in 1 until epochs) {
         val g = gradient(m, f, tolerance).normalize()
 
-        lRate *= 0.99
+        if(i % interval == 0)
+            lRate *= 0.99
+
+        if (i % (epochs / 8) == 0)
+            tolerance *= 0.5
 
         if ((epochs - i) == sprint) {
             m = bestM
@@ -46,18 +59,38 @@ fun gradientDescentRMSProp(f: (SimpleMatrix) -> SimpleMatrix, epochs: Int): Plot
             m[j] += -(lRate / sqrt(gradSquared[j])) * g[j]
         }
 
-        val c = cost(m, f)
+        val c = cost(m, f, tolerance)
+        averages[i % averagesCount] = c
         if (c < bestC) {
             bestC = c
-            bestM = m
+            bestM = m.copy()
         }
-        print("\r${epochs - i} - $c")
-        if (i > 1000)
+
+        print("\r${epochs - i} - $c - lr: $lRate")
+
+        if (c < 100) {
             plotData.xy(i.toDouble(), c)
+            averageData.xy(i.toDouble(), averages.average())
+        }
+
         m = m.rowNorm()
     }
+    } catch (e:Exception) {
+        try {
+            //println(m)
+            //println(gradient(m, f, tolerance))
+            //println(cost(m, f, tolerance))
+        } catch (e:Exception) { }
+    }
 
-    println("\rBest: $bestC")
+    Plot.plot(Plot.plotOpts()
+            .title("RMSProp"))
+            .series("Cost Function", plotData, Plot.seriesOpts())
+            .series("Mean-average", averageData, Plot.seriesOpts().color(Color.GREEN))
+            .saveWithExt()
+    println("Best\n${bestM}")
+    println("\nBest: ${cost(bestM, f, 1.0E-5)} - First: $firstCost")
+
     return plotData
 }
 
@@ -167,7 +200,7 @@ fun derivative(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, e: Int, toler
     val mn = m.withSet(e, m[e] - h).rowNorm()
     val mnbarmn = mn.rightInverse().mult(mp)
 
-    return untilAverageTolerance(1.0E-1) {
+    return untilAverageTolerance(tolerance) {
         x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
 
         (specificCost(mp, mpbarmp, f, x) - specificCost(mn, mnbarmn, f, x)) / (2 * h)
