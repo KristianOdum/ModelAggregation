@@ -15,10 +15,9 @@ const val gss_tolerance = 1.0E-20
 var gss_b = 1.0
 
 
-fun gradientDescentRMSProp(f: (SimpleMatrix) -> SimpleMatrix, epochs: Int, learningScale: Double = 0.8): Pair<Plot.Data, Plot.Data> {
+fun gradientDescentRMSProp(f: (SimpleMatrix) -> SimpleMatrix, epochs: Int): Plot.Data {
     var m = global_m.copy()
     val plotData = Plot.data()
-    val learningRateData = Plot.data()
 
     val prevGradSquared = m.create { _ -> 0.0 }
     val gradSquared = m.create { _ -> 0.0 }
@@ -57,7 +56,7 @@ fun gradientDescentRMSProp(f: (SimpleMatrix) -> SimpleMatrix, epochs: Int, learn
     }
 
     println("\rBest: $bestC")
-    return Pair(plotData, learningRateData)
+    return plotData
 }
 
 fun gradientDescent(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (SimpleMatrix) -> SimpleMatrix) -> Double, n: Int, nhat: Int, epochs: Int): SimpleMatrix {

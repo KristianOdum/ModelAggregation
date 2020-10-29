@@ -12,21 +12,10 @@ val toyF = { x: SimpleMatrix ->
     y
 }
 
+val randomP = Random(System.currentTimeMillis())
 val global_sir = RandomSIR(3)
 val global_m = randMatrix(global_sir.functionsCount -1, global_sir.functionsCount, 0.0, 1.0)
 
-val randomP = Random(System.currentTimeMillis())
-
 fun main() {
-    //Random(System.currentTimeMillis())
-    val sir = RandomSIR(3)
-
-    val pso = ParticleSwarmOptimization(sir.function, sir.functionsCount, sir.functionsCount-1, 20)
-
-    File("data1.txt").delete()
-
-    for(i in 0..499){
-        println("$i")
-        pso.run(3000)
-    }
+    val rms = gradientDescentRMSProp(sir.function, 100, )
 }
