@@ -4,228 +4,141 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import org.ejml.simple.SimpleMatrix
+import java.awt.Color
 import kotlin.math.abs
+import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 const val h = 0.0001 // small number..
 val gr = (sqrt(5.0) + 1.0) / 2.0
-const val gss_tolerance = 1.0E-20
+const val gss_tolerance = 1.0E-5
 var gss_b = 1.0
 
-fun rms(average: Double, new: Double, epsilon: Double = 0.001, gamma:Double = 0.9)
-        = sqrt((gamma * average + (1 - gamma) * new.pow(2.0)) + epsilon)
+val plotAlpha = false
 
-fun gradientDescentNesterovLearningRate(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (SimpleMatrix) -> SimpleMatrix) -> Double, n: Int, nhat: Int, epochs: Int): SimpleMatrix {
-    val m = randMatrix(nhat, n, 0.0, 1.0)
-    var best = Double.MAX_VALUE
-    val velocities = m.create { _ -> .0 }
-    val alpha = .0
-    val learningRate = .0001
-    var lastGradient = m.create { _ -> .0 }
+fun gradientDescentRMSProp(f: (SimpleMatrix) -> SimpleMatrix, epochs: Int): Plot.Data {
+    var m = global_m.copy().rowNorm()
+    val plotData = Plot.data()
 
-    repeat (epochs) {
-        val g_nag = gradient(m + velocities.scale(alpha), f)
-        val deltas = g_nag.create { _ -> 0.0 }
+    val prevGradSquared = m.create { _ -> 0.0 }
+    val gradSquared = m.create { _ -> 0.0 }
+    val beta = 0.9
 
-        for (i in 0 until g_nag.numElements) {
-            deltas[i] = (lastGradient[i] - deltas[i])
+    var tolerance = 1.0E5
+    var lRate = 1.0E-4
+    var interval = 100
+    var bestC = Double.MAX_VALUE
+    var bestM = m.copy()
+    val sprint = (epochs.toDouble() / 5.0).toInt()
+
+    val averagesCount = 20
+    val averages = Array(averagesCount) { 0.0 }
+    val averageData = Plot.data()
+
+    val firstCost = cost(m, f, 1.0E-5)
+    val firstM = m.copy()
+    averages[0] = firstCost
+
+    try {
+    for (i in 1 until epochs) {
+        val g = gradient(m, f, tolerance).normalize()
+
+        if(i % interval == 0)
+            lRate *= 0.99
+
+        if (i % (epochs / 8) == 0)
+            tolerance *= 0.5
+
+        if ((epochs - i) == sprint) {
+            m = bestM
         }
 
-        val g = deltas.elementSum()
-
-        for (i in 0 until m.numElements) {
-            velocities[i] = alpha * velocities[i] + learningRate * g
-
-            m[i] += velocities[i]
+        for (j in 0 until m.numElements) {
+            gradSquared[j] = (beta * prevGradSquared[j]) + ((1.0 - beta) * (g[j].pow(2.0)))
+            m[j] += -(lRate / sqrt(gradSquared[j])) * g[j]
         }
-        lastGradient = g_nag
 
-        val c = cost(m, f)
-        if(c < best)
-            best = c
-        print("\r" + c)
+        val c = cost(m, f, tolerance)
+        averages[i % averagesCount] = c
+        if (c < bestC) {
+            bestC = c
+            bestM = m.copy()
+        }
+
+        print("\r${epochs - i} - $c - lr: $lRate")
+
+        if (c < 100) {
+            plotData.xy(i.toDouble(), c)
+            averageData.xy(i.toDouble(), averages.average())
+        }
+
+        m = m.rowNorm()
+    }
+    } catch (e:Exception) {
+        try {
+            //println(m)
+            //println(gradient(m, f, tolerance))
+            //println(cost(m, f, tolerance))
+        } catch (e:Exception) { }
     }
 
-    println("\nBest: $best")
-    return m
-}
+    Plot.plot(Plot.plotOpts()
+            .title("RMSProp"))
+            .series("Cost Function", plotData, Plot.seriesOpts())
+            .series("Mean-average", averageData, Plot.seriesOpts().color(Color.GREEN))
+            .saveWithExt()
+    println("Best\n${bestM}")
+    println("\nBest: ${cost(bestM, f, 1.0E-5)} - First: $firstCost")
 
-fun gradientDescentDynamicLearningRate(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (SimpleMatrix) -> SimpleMatrix) -> Double, n: Int, nhat: Int, epochs: Int): SimpleMatrix {
-    val m = randMatrix(nhat, n, 0.0, 1.0)
-    var best = Double.MAX_VALUE
-    var best_m = m.create { _ -> .0 }
-    val upscaleFactor = 1.2
-    val downscaleFactor = 0.5
-    val prevGradient = m.create { _ -> 0.0 }
-    val learningRates = m.create { _ -> 0.001 }
-    val minimaFound = m.create { _ -> -1.0}
-
-    repeat (epochs) {
-        val g = gradient(m, f)
-
-        for (i in 0 until m.numElements) {
-            if (g[i] > 0)
-                m[i] -= learningRates[i]
-            else
-                m[i] += learningRates[i]
-
-            if (prevGradient[i] * g[i] > 0)
-                learningRates[i] *= upscaleFactor
-            else {
-                learningRates[i] *= downscaleFactor
-                minimaFound[i] = 1.0
-            }
-
-            prevGradient[i] = g[i]
-        }
-        val c = cost(m, f)
-        if(c < best) {
-            best = c
-            best_m = m
-        }
-        print("\r" + c)
-    }
-
-    println("\nBest: $best")
-    return best_m
-}
-fun gradientDescentConstantLearningRate(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (SimpleMatrix) -> SimpleMatrix) -> Double, n: Int, nhat: Int, epochs: Int): SimpleMatrix {
-    val m = randMatrix(nhat, n, 0.0, 1.0)
-    val stepSize = 0.0001
-    var best = Double.MAX_VALUE
-
-    repeat (epochs) {
-        val g = gradient(m, f)
-
-        for (i in 0 until m.numElements) {
-            if (g[i] > 0)
-                m[i] -= stepSize
-            else
-                m[i] += stepSize
-        }
-        val c = cost(m, f)
-        if(c < best)
-            best = c
-        print("\r" + c)
-    }
-
-    println("\nBest: $best")
-    return m
-}
-
-fun gradientDescentADADelta(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (SimpleMatrix) -> SimpleMatrix) -> Double, n: Int, nhat: Int, epochs: Int): SimpleMatrix {
-    val m = randMatrix(nhat, n, 0.0, 1.0)
-    var best = Double.MAX_VALUE
-    val averageGradients = m.create { _ -> 0.0 }
-    val averageDeltas = m.create {_ -> 0.0}
-    val previousDeltas = m.create {_ -> 0.0}
-    val previousAverageDeltas = m.create { _ -> 0.0 }
-    val gamma = 0.9
-
-    repeat (epochs) {
-        val g = gradient(m, f)
-
-        for (i in 0 until m.numElements) {
-            // Calculate new delta
-            val delta = -(rms(previousAverageDeltas[i], previousDeltas[i]) / rms(averageDeltas[i], g[i]) * g[i])
-
-            averageGradients[i] = gamma * averageGradients[i] + (1 - gamma) * g[i].pow(2.0)
-
-            m[i] += delta
-            // calculate average delta
-            // Update previous deltas
-            previousAverageDeltas[i] = averageDeltas[i]
-            previousDeltas[i] = delta
-            averageDeltas[i] = gamma * averageDeltas[i] + (1 - gamma) * delta.pow(2.0)
-        }
-        val c = cost(m, f)
-        if(c < best)
-            best = c
-        print("\r" + c)
-    }
-    println("\nBest: $best")
-    return m
-}
-
-fun gradientDescentRMSProp(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (SimpleMatrix) -> SimpleMatrix) -> Double, n: Int, nhat: Int, epochs: Int): SimpleMatrix {
-    val m = randMatrix(nhat, n, 0.0, 1.0)
-    val averageGradients  = m.create { _ -> .0 }
-    var best = Double.MAX_VALUE
-
-    val learningRate = 0.001
-    val eps = 1e-8
-
-    repeat (epochs) {
-        val g = gradient(m, f)
-
-        for (i in 0 until m.numElements) {
-            averageGradients[i] += rms(averageGradients[i], g[i])
-            val delta = -(learningRate / sqrt(averageGradients[i] + eps)) * g[i]
-
-            m[i] += delta
-        }
-        val c = cost(m, f)
-        if(c < best)
-            best = c
-        print("\r" + c)
-    }
-    println("\nBest: $best")
-
-    return m
+    return plotData
 }
 
 fun gradientDescent(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (SimpleMatrix) -> SimpleMatrix) -> Double, n: Int, nhat: Int, epochs: Int): SimpleMatrix {
-    var m = randMatrix(nhat, n, 0.0, 1.0)
-
-    println("m: $m")
+    var m = randMatrix(nhat, n, 0.0, 1.0).rowNorm()
+    gss_b = 1.0
     for (i in 0 until epochs) {
         var g = gradient(m, f)
         g = g.divide(g.normF())
 
-        gss_b /= 2
-
-        /*
-        val dataPoints = mutableListOf<Pair<Double, Double>>()
-
-        runBlocking {
-            val dataPointMutex = Mutex()
-            val jobs = (0 until 100).map {
-                GlobalScope.launch {
-                    val d = gss_b * it.toDouble() / 100
-                    val c = cost(m.plus(g.scale(-d)), f)
-
-                    dataPointMutex.lock()
-                    dataPoints.add(Pair(d, c))
-                    dataPointMutex.unlock()
-                }
-            }
-            jobs.joinAll()
-        }
-        dataPoints.sortBy { it.first }
-
-        val alphaPlot = Plot.data()
-*/
         val alpha = alpha { scaling ->
             cost(m.plus(g.scale(-scaling)), f)
         }
+        gss_b = 0.6 * (gss_b - (2 * alpha)) + (2 * alpha)
 
-        println("alpha: $alpha")
+        if (plotAlpha) {
+            val plot = Plot.plot(Plot.plotOpts()
+                    .title("Cost function"))
+                    .series("data", plotAlpha(m, g, f), Plot.seriesOpts())
+                    .series("alpha", Plot.data().xy(alpha, cost(m.minus(g.scale(alpha)), f)), Plot.seriesOpts().color(Color.RED).marker(Plot.Marker.DIAMOND))
+                    .save("plot$i", "png")
+        }
 
-        m = m.minus(g.scale(alpha)).colNorm()
-        println("m: $m")
-        println("Gradient: $g")
-        val cost = cost(m, f)
-        println("Cost: " + cost)
-/*
-        val plot = Plot.plot(Plot.plotOpts()
-                .title("Cost function"))
-                .series("data", Plot.data().xy(dataPoints.map { it.first }, dataPoints.map { it.second }), Plot.seriesOpts())
-                .series("alpha", Plot.data().xy(alpha, cost), Plot.seriesOpts().color(Color.RED).marker(Plot.Marker.DIAMOND))
-
-        plot.save("plot$i", "png") */
+        m = m.minus(g.scale(alpha)).MGSON()
+        println(cost(m, f))
     }
     return m
+}
+
+fun plotAlpha(m: SimpleMatrix, g: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Plot.Data {
+    val dataPoints = mutableListOf<Pair<Double, Double>>()
+    val plotCount = 50
+    runBlocking {
+        val dataPointMutex = Mutex()
+        val jobs = (0 until plotCount).map {
+            GlobalScope.launch {
+                val d = gss_b * it.toDouble() / plotCount
+                val c = cost(m.plus(g.scale(-d)), f)
+
+                dataPointMutex.lock()
+                dataPoints.add(Pair(d, c))
+                dataPointMutex.unlock()
+            }
+        }
+        jobs.joinAll()
+    }
+    dataPoints.sortBy { it.first }
+    return  Plot.data().xy(dataPoints.map { it.first }, dataPoints.map { it.second })
 }
 
 fun alpha(cost: (Double) -> Double): Double {
@@ -237,7 +150,7 @@ fun alpha(cost: (Double) -> Double): Double {
     var fc = cost(c)
     var fd = cost(d)
 
-    while(abs(c - d) > gss_tolerance) {
+    while(abs(c - d) > gss_b * gss_tolerance) {
         if (fc < fd) {
             b = d
             d = c
@@ -256,7 +169,7 @@ fun alpha(cost: (Double) -> Double): Double {
     return (a + b) / 2
 }
 
-fun gradient(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): SimpleMatrix {
+fun gradient(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, tolerance: Double = 1.0E-1): SimpleMatrix {
     val gradient = SimpleMatrix(m.numRows(), m.numCols())
     val mutex = Mutex()
     var i = 0
@@ -264,7 +177,7 @@ fun gradient(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): SimpleMatrix {
     runBlocking {
         val jobs = (0 until m.numElements).map {elem ->
             GlobalScope.launch {
-                val g = derivative(m, f, elem)
+                val g = derivative(m, f, elem, tolerance)
 
                 mutex.lock()
                 i++
@@ -280,17 +193,17 @@ fun gradient(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): SimpleMatrix {
     return gradient
 }
 
-fun derivative(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, e: Int): Double {
+fun derivative(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, e: Int, tolerance: Double): Double {
     var x: SimpleMatrix
-    val mp = m.withSet(e, m[e] + h).colNorm()
-    val mpbar = mp.rightInverse()
-    val mn = m.withSet(e, m[e] - h).colNorm()
-    val mnbar = mn.rightInverse()
+    val mp = m.withSet(e, m[e] + h).rowNorm()
+    val mpbarmp = mp.rightInverse().mult(mp)
+    val mn = m.withSet(e, m[e] - h).rowNorm()
+    val mnbarmn = mn.rightInverse().mult(mp)
 
-    return untilAverageTolerance {
+    return untilAverageTolerance(tolerance) {
         x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
 
-        (specificCost(mp, mpbar, f, x) - specificCost(mn, mnbar, f, x)) / (2 * h)
+        (specificCost(mp, mpbarmp, f, x) - specificCost(mn, mnbarmn, f, x)) / (2 * h)
     }
 }
 

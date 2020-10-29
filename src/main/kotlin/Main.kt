@@ -13,6 +13,8 @@ val toyF = { x: SimpleMatrix ->
 }
 
 val randomP = Random(System.currentTimeMillis())
+val global_sir = RandomSIR(3)
+val global_m = randMatrix(global_sir.functionsCount -1, global_sir.functionsCount, 0.0, 1.0)
 
 fun main() {
     //Random(System.currentTimeMillis())

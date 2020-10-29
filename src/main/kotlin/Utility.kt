@@ -1,23 +1,24 @@
 import org.ejml.simple.SimpleMatrix
+import java.io.File
 import kotlin.math.abs
 import kotlin.math.pow
-import kotlin.random.Random
+import kotlin.math.sqrt
 
 const val MAX_X = 1000.0
 const val MIN_X = 0.0
 
-fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
+fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, tolerance: Double = 1.0E-1): Double {
     var x: SimpleMatrix
-    val mbar = m.rightInverse()
+    val mbarm = m.rightInverse().mult(m)
 
-    return untilAverageTolerance {
+    return untilAverageTolerance(tolerance) {
         x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
 
-        specificCost(m, mbar, f, x).pow(2.0)
+        specificCost(m, mbarm, f, x).pow(2.0)
     }
 }
 
-fun untilAverageTolerance(tolerance: Double = 1.0E-2, clusterSize: Int = 50, action: () -> Double): Double {
+fun untilAverageTolerance(tolerance: Double, clusterSize: Int = 1, action: () -> Double): Double {
     val averages = mutableListOf<Double>()
     var i = 0
 
@@ -43,8 +44,8 @@ fun untilAverageTolerance(tolerance: Double = 1.0E-2, clusterSize: Int = 50, act
     return averages.last()
 }
 
-fun specificCost(m: SimpleMatrix, mbar: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, x: SimpleMatrix) =
-        m.mult(f(x)).minus(m.mult(f(mbar.mult(m.mult(x))))).normF()
+fun specificCost(m: SimpleMatrix, mbarm: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, x: SimpleMatrix) =
+        m.mult(f(x).minus(f(mbarm.mult(x)))).normF()
 
 fun SimpleMatrix.withSet(i: Int, value: Double): SimpleMatrix {
     val new = SimpleMatrix(this)
@@ -117,9 +118,9 @@ fun SimpleMatrix.normalize(): SimpleMatrix = this.create { i, j -> this[i,j] / t
 fun SimpleMatrix.rowNorm(): SimpleMatrix {
     val n = SimpleMatrix(this)
     for (i in 0 until this.numRows()) {
-        val total = this.rowVector(i).allElements().sum()
+        val magnitude = sqrt(rowVector(i).allElements().map{ it * it }.sum())
         for (j in 0 until this.numCols()) {
-            n[i,j] = n[i,j] / total
+            n[i,j] = n[i,j] / magnitude
         }
     }
     return  n
@@ -128,9 +129,9 @@ fun SimpleMatrix.rowNorm(): SimpleMatrix {
 fun SimpleMatrix.colNorm(): SimpleMatrix {
     val n = SimpleMatrix(this)
     for (j in 0 until numCols()) {
-        val total = colVector(j).allElements().sum()
+        val magnitude = sqrt(colVector(j).allElements().map{ it * it }.sum())
         for (i in 0 until numRows()) {
-            n[i,j] = n[i,j] / total
+            n[i,j] = n[i,j] / magnitude
         }
     }
     return  n
@@ -138,3 +139,87 @@ fun SimpleMatrix.colNorm(): SimpleMatrix {
 
 fun SimpleMatrix.rowVector(r: Int): SimpleMatrix = SimpleMatrix(1, numCols()).create { i -> this[r, i] }
 fun SimpleMatrix.colVector(c: Int): SimpleMatrix = SimpleMatrix(numRows(), 1).create {i -> this[i, c]}
+
+
+fun Plot.saveWithExt(fileName: String = "plot") {
+    for (ext in (0..50).withIndex()) {
+        val path = fileName + ext.value.toString() + ".png"
+        val file = File(path)
+        val exists = file.exists()
+
+        if (!exists) {
+            this.save(path.removeSuffix(".png"), "png")
+            return
+        }
+    }
+}
+
+data class LUPair(val L: SimpleMatrix, val U: SimpleMatrix)
+
+fun SimpleMatrix.LUDecomposition(): LUPair {
+    val upper = SimpleMatrix(numRows(), numCols())
+    val lower = SimpleMatrix(numRows(), numRows())
+
+    for (i in 0 until numRows()) {
+        for (k in i until numCols()) {
+            var sum = 0.0
+            for (j in 0 until i) {
+                sum += lower[i, j] * upper[j, k]
+            }
+            upper[i, k] = this[i, k] - sum
+        }
+
+        for (k in i until numRows()) {
+            if (i == k) {
+                lower[i, i] = 1.0
+            } else {
+                var sum = 0.0
+                for (j in 0 until i)
+                    sum += lower[k, j] * upper[j, i]
+                lower[k, i] = (this[k, i] - sum) / upper[i, i]
+            }
+        }
+    }
+
+    return LUPair(lower, upper)
+}
+
+// Modified Gram-Schmidt OrthoNormalization
+fun SimpleMatrix.MGSON(): SimpleMatrix {
+    var u = SimpleMatrix(this)
+
+    u = u.setRow(0, u.rowVector(0).normalize())
+    for (r in 1 until numRows()) {
+        var w = this.rowVector(r) - this.rowVector(r).project(u.rowVector(0))
+        for (k in 1 until r) {
+            w -= w.project(u.rowVector(k))
+        }
+        u = u.setRow(r, w.normalize())
+    }
+    return u
+}
+
+fun SimpleMatrix.project(u: SimpleMatrix): SimpleMatrix {
+    if (u.allElements().all { it == 0.0 })
+        return u
+    return u.scale(u.dot2(this) / u.dot2(u))
+}
+
+fun SimpleMatrix.dot2(v: SimpleMatrix): Double {
+    return allElements().zip(v.allElements()).sumByDouble { it.first * it.second }
+}
+
+fun SimpleMatrix.setRow(row: Int, vector: SimpleMatrix): SimpleMatrix {
+    val final = SimpleMatrix(this)
+    if (vector.numCols() > vector.numRows()) {
+        for (col in 0 until numCols()) {
+            final[row, col] = vector[0, col]
+        }
+    } else {
+        val col = row
+        for (row in 0 until numRows()) {
+            final[row, col] = vector[row, 0]
+        }
+    }
+    return final
+}
