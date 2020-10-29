@@ -9,16 +9,16 @@ const val MIN_X = 0.0
 
 fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
     var x: SimpleMatrix
-    val mbar = m.rightInverse()
+    val mbarm = m.rightInverse().mult(m)
 
-    return untilAverageTolerance {
+    return untilAverageTolerance(1.0E-3) {
         x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
 
-        specificCost(m, mbar, f, x).pow(2.0)
+        specificCost(m, mbarm, f, x).pow(2.0)
     }
 }
 
-fun untilAverageTolerance(tolerance: Double = 1.0E-2, clusterSize: Int = 50, action: () -> Double): Double {
+fun untilAverageTolerance(tolerance: Double = 1.0E-3, clusterSize: Int = 50, action: () -> Double): Double {
     val averages = mutableListOf<Double>()
     var i = 0
 
@@ -44,8 +44,8 @@ fun untilAverageTolerance(tolerance: Double = 1.0E-2, clusterSize: Int = 50, act
     return averages.last()
 }
 
-fun specificCost(m: SimpleMatrix, mbar: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, x: SimpleMatrix) =
-        m.mult(f(x)).minus(m.mult(f(mbar.mult(m.mult(x))))).normF()
+fun specificCost(m: SimpleMatrix, mbarm: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, x: SimpleMatrix) =
+        m.mult(f(x).minus(f(mbarm.mult(x)))).normF()
 
 fun SimpleMatrix.withSet(i: Int, value: Double): SimpleMatrix {
     val new = SimpleMatrix(this)
@@ -140,6 +140,7 @@ fun SimpleMatrix.colNorm(): SimpleMatrix {
 fun SimpleMatrix.rowVector(r: Int): SimpleMatrix = SimpleMatrix(1, numCols()).create { i -> this[r, i] }
 fun SimpleMatrix.colVector(c: Int): SimpleMatrix = SimpleMatrix(numRows(), 1).create {i -> this[i, c]}
 
+
 fun Plot.saveWithExt(fileName: String = "plot") {
     for (ext in (0..50).withIndex()) {
         val path = fileName + ext.value.toString() + ".png"
@@ -147,9 +148,59 @@ fun Plot.saveWithExt(fileName: String = "plot") {
         val exists = file.exists()
 
         if (!exists) {
-            println("Saved to $path.")
             this.save(path.removeSuffix(".png"), "png")
             return
         }
+    }
+}
+
+data class LUPair(val L: SimpleMatrix, val U: SimpleMatrix)
+
+fun SimpleMatrix.LUDecomposition(): LUPair {
+    val upper = SimpleMatrix(numRows(), numCols())
+    val lower = SimpleMatrix(numRows(), numRows())
+
+    for (i in 0 until numRows()) {
+        for (k in i until numCols()) {
+            var sum = 0.0
+            for (j in 0 until i) {
+                sum += lower[i, j] * upper[j, k]
+            }
+            upper[i, k] = this[i, k] - sum
+        }
+
+        for (k in i until numRows()) {
+            if (i == k) {
+                lower[i, i] = 1.0
+            } else {
+                var sum = 0.0
+                for (j in 0 until i)
+                    sum += lower[k, j] * upper[j, i]
+                lower[k, i] = (this[k, i] - sum) / upper[i, i]
+            }
+        }
+    }
+
+    return LUPair(lower, upper)
+}
+
+// Modified Gram-Schmidt OrthoNormalization
+fun SimpleMatrix.MGSON(m: SimpleMatrix) {
+    val u = SimpleMatrix(m)
+
+    u.setRow(0, 0)
+    for (r in 1 until m.numRows()) {
+
+    }
+}
+
+fun SimpleMatrix.project(v: SimpleMatrix, u: SimpleMatrix): SimpleMatrix {
+    return u.scale(u.dot(v) / u.dot(u))
+}
+
+fun SimpleMatrix.setRow(row: Int, vector: SimpleMatrix) {
+    val final = SimpleMatrix(this)
+    for (col in 0 until numCols()) {
+        final[row, col] = vector[col, row]
     }
 }

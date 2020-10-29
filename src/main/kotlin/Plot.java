@@ -32,6 +32,7 @@ public class Plot {
 	public enum Marker { NONE, CIRCLE, SQUARE, DIAMOND, COLUMN, BAR };
 	public enum AxisFormat { NUMBER, NUMBER_KGM, NUMBER_INT, TIME_HM, TIME_HMS, DATE, DATETIME_HM, DATETIME_HMS }
 	public enum LegendFormat { NONE, TOP, RIGHT, BOTTOM }
+	public enum AxisScaling { LINEAR, LOGARITHMIC_X, LOGARITHMIC_Y, LOGARITHMIC_XY}
 	
 	private enum HorizAlign { LEFT, CENTER, RIGHT }
 	private enum VertAlign { TOP, CENTER, BOTTOM }
@@ -72,6 +73,7 @@ public class Plot {
 		private int tickSize = 5;
 		private Font labelFont = new Font("Arial", 0, 12);
 		private LegendFormat legend = LegendFormat.NONE;
+		private AxisScaling axisScaling = AxisScaling.LINEAR;
 		
 		private PlotOptions() {}
 		
@@ -149,6 +151,11 @@ public class Plot {
 			this.legend = legend;
 			return this;
 		}
+
+		public PlotOptions axisScaling(AxisScaling axisScaling) {
+			this.axisScaling = axisScaling;
+			return this;
+		}
 		
 	}
 	
@@ -213,8 +220,14 @@ public class Plot {
 			calc(g);
 			drawBackground(g);
 			plotArea.draw(g);
-			for (DataSeries series : dataSeriesMap.values())
+			for (DataSeries series : dataSeriesMap.values()) {
+				if (opts.axisScaling == AxisScaling.LOGARITHMIC_X || opts.axisScaling == AxisScaling.LOGARITHMIC_XY)
+					series.opts.xAxis.opts.isLogarithmic = true;
+				if (opts.axisScaling == AxisScaling.LOGARITHMIC_Y || opts.axisScaling == AxisScaling.LOGARITHMIC_XY)
+					series.opts.yAxis.opts.isLogarithmic = true;
+
 				series.draw(g);
+			}
 			return image;
 		} finally {
 			g.dispose();
@@ -614,6 +627,7 @@ public class Plot {
 		private AxisFormat format = AxisFormat.NUMBER;
 		private boolean dynamicRange = true;
 		private Range range;
+		private boolean isLogarithmic = false;
 		
 		public AxisOptions format(AxisFormat format) {
 			this.format = format;
@@ -623,6 +637,11 @@ public class Plot {
 		public AxisOptions range(double min, double max) {
 			this.range = new Range(min, max);
 			this.dynamicRange = false;
+			return this;
+		}
+
+		public AxisOptions logarithmic(boolean isLogarithmic) {
+			this.isLogarithmic = isLogarithmic;
 			return this;
 		}
 
