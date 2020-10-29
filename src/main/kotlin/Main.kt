@@ -17,14 +17,6 @@ val global_sir = RandomSIR(3)
 val global_m = randMatrix(global_sir.functionsCount -1, global_sir.functionsCount, 0.0, 1.0)
 
 fun main() {
+    println(gradientDescent(global_sir.function, ::cost, global_sir.functionsCount, global_sir.functionsCount - 1, 100))
 
-    var data = ""
-
-    for (i in 0 until 5) {
-        val sir = RandomSIR(3)
-        data += cost(gradientDescent(sir.function, ::cost, sir.functionsCount, sir.functionsCount - 1, 50), sir.function).toString() + " "
-        print("\r$i")
-    }
-
-    println(data)
 }
