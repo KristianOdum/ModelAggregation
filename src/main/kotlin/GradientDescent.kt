@@ -179,9 +179,8 @@ fun gradientDescentRMSProp(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatri
 }
 
 fun gradientDescent(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (SimpleMatrix) -> SimpleMatrix) -> Double, n: Int, nhat: Int, epochs: Int): SimpleMatrix {
-    var m = randMatrix(nhat, n, 0.0, 1.0)
-
-    println("m: $m")
+    var m = randMatrix(nhat, n, 0.0, 1.0).rowNorm()
+    gss_b = 1.0
     for (i in 0 until epochs) {
         var g = gradient(m, f)
         g = g.divide(g.normF())
@@ -199,10 +198,7 @@ fun gradientDescent(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (Sim
                     .save("plot$i", "png")
         }
 
-        m = m.minus(g.scale(alpha)).colNorm()
-
-        val cost = cost(m, f)
-        println("Cost: " + cost)
+        m = m.minus(g.scale(alpha)).rowNorm()
 
     }
     return m
@@ -283,9 +279,9 @@ fun gradient(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): SimpleMatrix {
 
 fun derivative(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, e: Int): Double {
     var x: SimpleMatrix
-    val mp = m.withSet(e, m[e] + h)
+    val mp = m.withSet(e, m[e] + h).rowNorm()
     val mpbarmp = mp.rightInverse().mult(mp)
-    val mn = m.withSet(e, m[e] - h)
+    val mn = m.withSet(e, m[e] - h).rowNorm()
     val mnbarmn = mn.rightInverse().mult(mp)
 
     return untilAverageTolerance(1.0E-1) {

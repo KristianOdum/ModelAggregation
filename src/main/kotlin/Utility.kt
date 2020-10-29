@@ -1,4 +1,5 @@
 import org.ejml.simple.SimpleMatrix
+import sun.java2d.pipe.SpanShapeRenderer
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.random.Random
@@ -17,7 +18,7 @@ fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
     }
 }
 
-fun untilAverageTolerance(tolerance: Double = 1.0E-1, clusterSize: Int = 50, action: () -> Double): Double {
+fun untilAverageTolerance(tolerance: Double = 1.0E-3, clusterSize: Int = 50, action: () -> Double): Double {
     val averages = mutableListOf<Double>()
     var i = 0
 
@@ -167,4 +168,25 @@ fun SimpleMatrix.LUDecomposition(): LUPair {
     }
 
     return LUPair(lower, upper)
+}
+
+// Modified Gram-Schmidt OrthoNormalization
+fun SimpleMatrix.MGSON(m: SimpleMatrix) {
+    val u = SimpleMatrix(m)
+
+    u =
+    for (r in 1 until m.numRows()) {
+
+    }
+}
+
+fun SimpleMatrix.project(v: SimpleMatrix, u: SimpleMatrix): SimpleMatrix {
+    return u.scale(u.dot(v) / u.dot(u))
+}
+
+fun SimpleMatrix.setRow(matrix: SimpleMatrix, row: Int, vector: SimpleMatrix) {
+    val final = SimpleMatrix(matrix)
+    for (col in 0 until matrix.numCols()) {
+        final[row, col] = vector[col, row]
+    }
 }

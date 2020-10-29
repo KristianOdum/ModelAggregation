@@ -15,9 +15,15 @@ val toyF = { x: SimpleMatrix ->
 val randomP = Random(System.currentTimeMillis())
 
 fun main() {
-    val sir = RandomSIR(3)
 
-    val m = gradientDescent(sir.function, ::cost, sir.functionsCount, sir.functionsCount - 1, 100)
+    var data = ""
 
-    println(m)
+    for (i in 0 until 5) {
+        val sir = RandomSIR(3)
+        data += cost(gradientDescent(sir.function, ::cost, sir.functionsCount, sir.functionsCount - 1, 50), sir.function).toString() + " "
+        print("\r$i")
+    }
+
+    println(data)
+
 }
