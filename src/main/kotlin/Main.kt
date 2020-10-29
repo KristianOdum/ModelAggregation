@@ -1,4 +1,6 @@
+import PSO.ParticleSwarmOptimization
 import org.ejml.simple.SimpleMatrix
+import java.io.File
 import kotlin.random.Random
 
 
@@ -10,12 +12,18 @@ val toyF = { x: SimpleMatrix ->
     y
 }
 
-val randomP = Random(0)
+val randomP = Random(System.currentTimeMillis())
 
 fun main() {
     //Random(System.currentTimeMillis())
-    val sir = RandomSIR(8)
+    val sir = RandomSIR(3)
 
-    gradientDescent(sir.function, ::cost, sir.functionsCount, sir.functionsCount - 1, 100)
+    val pso = ParticleSwarmOptimization(sir.function, sir.functionsCount, sir.functionsCount-1, 20)
 
+    File("data1.txt").delete()
+
+    for(i in 0..499){
+        println("$i")
+        pso.run(3000)
+    }
 }
