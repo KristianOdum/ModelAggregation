@@ -17,10 +17,5 @@ val global_sir = RandomSIR(3)
 val global_m = randMatrix(global_sir.functionsCount -1, global_sir.functionsCount, 0.0, 1.0)
 
 fun main() {
-    val rms = gradientDescentRMSProp(global_sir.function, 100)
-
-    Plot.plot(Plot.plotOpts()
-            .title("RMSProp"))
-            .series("Cost Function", rms, Plot.seriesOpts())
-            .saveWithExt()
+    println(gradientDescent(global_sir.function, ::cost, global_sir.functionsCount, global_sir.functionsCount - 1, 100))
 }

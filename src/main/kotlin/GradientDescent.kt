@@ -114,8 +114,8 @@ fun gradientDescent(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (Sim
                     .save("plot$i", "png")
         }
 
-        m = m.minus(g.scale(alpha)).rowNorm()
-
+        m = m.minus(g.scale(alpha)).MGSON()
+        println(cost(m, f))
     }
     return m
 }
