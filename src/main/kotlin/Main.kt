@@ -33,4 +33,15 @@ fun main() {
                 .series("RMS", rms, Plot.seriesOpts().color(Color.BLUE))
                 .series("ADAM1", adam, Plot.seriesOpts().color(Color.RED)).saveWithExt()
     }*/
+    //Random(System.currentTimeMillis())
+    val sir = RandomSIR(3)
+
+    val pso = ParticleSwarmOptimization(sir.function, sir.functionsCount, sir.functionsCount-1, 20)
+
+    File("dataphi2.txt").delete()
+
+    for(i in 0..99){
+        println("$i")
+        pso.run(3000)
+    }
 }
