@@ -143,7 +143,7 @@ fun SimpleMatrix.colVector(c: Int): SimpleMatrix = SimpleMatrix(numRows(), 1).cr
 
 fun Plot.saveWithExt(fileName: String = "plot") {
     for (ext in (0..50).withIndex()) {
-        val path = fileName + ext.value.toString() + ".png"
+        val path = "plots/" + fileName + ext.value.toString() + ".png"
         val file = File(path)
         val exists = file.exists()
 
