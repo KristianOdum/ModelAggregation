@@ -20,11 +20,6 @@ var global_m = randMatrix(global_sir.functionsCount-1, global_sir.functionsCount
 const val epochs = 100000
 
 fun main() {
-    val pso = ParticleSwarmOptimization(global_sir.function, global_sir.functionsCount, global_sir.functionsCount - 1)
-    pso.run(epochs)
-    gradientDescentADAM(global_sir.function, epochs)
-
-
     /*for (i in 0..10) {
 
         val rms = gradientDescentRMSProp(global_sir.function, epochs)
