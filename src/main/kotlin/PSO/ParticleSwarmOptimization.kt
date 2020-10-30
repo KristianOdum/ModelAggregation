@@ -1,5 +1,7 @@
 package PSO
 
+import MGSON
+import allElements
 import cost
 import hadamard
 import kotlinx.coroutines.GlobalScope
@@ -12,29 +14,32 @@ import randMatrix
 import rowNorm
 import java.io.File
 import java.lang.Math.abs
+import java.lang.Math.pow
 import java.lang.StringBuilder
 
-var lb = 0.0
+var lb = -1.0
 var ub = 1.0
-var maxV = (ub - lb) / 100.0
+var maxV = (ub - lb) / 10.0
 var maxOmega = 0.7
 var minOmega = 0.4
-var phi_p = 2.05
-var phi_g = 2.05
+var phi_p = 1.65
+var phi_g = 1.65
+var phi_l = 1.5
 
 class ParticleSwarmOptimization(val function: (SimpleMatrix) -> SimpleMatrix, val dimensions: Int, val reducedDimensions: Int, val particleCount: Int = 10) {
-    class Particle(n: Int, nHat: Int, bounds: ClosedFloatingPointRange<Double>, var id: Int) {
+    class Particle(n: Int, nHat: Int, bounds: ClosedFloatingPointRange<Double>) {
         var x: SimpleMatrix = randMatrix(nHat, n, bounds.start, bounds.endInclusive)
         var v: SimpleMatrix = run {
             val b = bounds.endInclusive - bounds.start
             randMatrix(nHat, n, -abs(b), abs(b))
         }
 
-        fun update(globalBest: SimpleMatrix, t: Int, tmax: Int) {
+        fun update(globalBest: SimpleMatrix, localBest: SimpleMatrix, t: Int, tmax: Int) {
             val r_p = randMatrix(x.numRows(), x.numCols(), 0.0, 1.0)
             val r_g = randMatrix(x.numRows(), x.numCols(), 0.0, 1.0)
+            val r_l = randMatrix(x.numRows(), x.numCols(), 0.0, 1.0)
 
-            v = v.scale(maxOmega - (maxOmega - minOmega) / tmax * t) + (bestX.minus(x)).hadamard(r_p).scale(phi_p) + (globalBest.minus(x)).hadamard(r_g).scale(phi_g)
+            v = v.scale(maxOmega - (maxOmega - minOmega) / tmax * t) + (globalBest.minus(x)).hadamard(r_g).scale(phi_g) + (bestX.minus(x)).hadamard(r_p).scale(phi_p)
 
             for(i in 0 until v.numElements){
                 if (v[i] > maxV) v[i] = maxV
@@ -54,7 +59,7 @@ class ParticleSwarmOptimization(val function: (SimpleMatrix) -> SimpleMatrix, va
 
         init {
             //particles.forEach{it.x = it.x.rowNorm(); it.bestCost = cost(it.x, function); println("Particle ${it.id} start value: ${it.x}")}
-            particles.forEach{it.x = it.x.rowNorm(); it.bestCost = cost(it.x, function)}
+            particles.forEach{it.x = it.x.MGSON(); it.bestCost = cost(it.x, function)}
             val (x, c) = particles.map{ Pair(it.x, it.bestCost) }.minByOrNull { it.second }!!
             globalBestX = x
             globalBestCost = c
@@ -67,8 +72,8 @@ class ParticleSwarmOptimization(val function: (SimpleMatrix) -> SimpleMatrix, va
             runBlocking {
                 val jobs = particles.map { p ->
                     GlobalScope.launch {
-                        p.update(globalBestX, t, tmax)
-                        p.x = p.x.rowNorm()
+                        p.update(globalBestX, SimpleMatrix(), t, tmax)
+                        p.x = p.x.MGSON()
 
                         val xCost = cost(p.x, function)
                         if (xCost < p.bestCost) {
@@ -91,22 +96,42 @@ class ParticleSwarmOptimization(val function: (SimpleMatrix) -> SimpleMatrix, va
             }
             t++
         }
+
+        fun localBest(p: Particle): SimpleMatrix{
+            return particlesNear(p,5).minByOrNull { it.bestCost }!!.bestX
+        }
+
+        fun particlesNear(p: Particle, neighborhoodsize: Int): List<Particle>{
+            val q = {it: Particle -> (it.x - p.x).allElements().map { it*it }.sum()}
+            val r = particles.toList()
+            return r.map { Pair(it, q(it)) }.sortedBy { it.second }.take(neighborhoodsize).map { it.first }
+        }
     }
 
     fun run(epochs: Int): SimpleMatrix {
-        var i = 1
         val s = StringBuilder()
-        val swarm = Swarm(List(particleCount) { Particle(dimensions, reducedDimensions, lb.rangeTo(ub), i++)}, function, epochs)
+        //val createSwarm = { i: Int -> Swarm(List(particleCount) { Particle(dimensions, reducedDimensions, lb.rangeTo(ub))}, function, epochs) }
+        //var swarms = List( 1, createSwarm)
+        val swarm = Swarm(List(particleCount) { Particle(dimensions, reducedDimensions, lb.rangeTo(ub))}, function, epochs)
 
         s.append("${swarm.globalBestCost} ")
         repeat(epochs) {
-            //Print iteration
+            //println("--Iteration: ${it}--")
+            //if (it % 1500 == 0){
+            //    //swarms = swarms.sortedBy { it.globalBestCost }.take(5) + List(5, createSwarm)
+            //    swarms.forEach { it.globalBestCost = Double.MAX_VALUE; it.particles.forEach { it.bestCost = Double.MAX_VALUE; it.x = randMatrix(it.x.numRows(), it.x.numCols(), lb, ub).MGSON() } }
+            //}
+            //swarms.forEach { it.iterate() }
+            //println(swarms.map { it.globalBestCost }.min())
             swarm.iterate()
-            //Print globalbest
             s.append("${swarm.globalBestCost} ")
         }
+        //println("Best X: ${swarm.globalBestX}")
+        //println("Best cost: ${swarm.globalBestCost}")
+        //swarm.particles.forEach { println(it.x) }
+        //return swarms.minBy { it.globalBestCost }!!.globalBestX
         s.appendLine()
-        File("dataphi2.txt").appendText(s.toString())
+        File("datax.txt").appendText(s.toString())
         return swarm.globalBestX
     }
 }
