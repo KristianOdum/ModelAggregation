@@ -7,7 +7,7 @@ import kotlin.math.sqrt
 const val MAX_X = 1000.0
 const val MIN_X = 0.0
 
-fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
+fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, tolerance: Double = 1.0E-2): Double {
     var x: SimpleMatrix
     val mbarm = m.rightInverse().mult(m)
 
@@ -18,7 +18,7 @@ fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
     }
 }
 
-fun untilAverageTolerance(tolerance: Double = 1.0E-3, clusterSize: Int = 50, action: () -> Double): Double {
+fun untilAverageTolerance(tolerance: Double, clusterSize: Int = 50, action: () -> Double): Double {
     val averages = mutableListOf<Double>()
     var i = 0
 
@@ -143,7 +143,7 @@ fun SimpleMatrix.colVector(c: Int): SimpleMatrix = SimpleMatrix(numRows(), 1).cr
 
 fun Plot.saveWithExt(fileName: String = "plot") {
     for (ext in (0..50).withIndex()) {
-        val path = fileName + ext.value.toString() + ".png"
+        val path = "plots/" + fileName + ext.value.toString() + ".png"
         val file = File(path)
         val exists = file.exists()
 
