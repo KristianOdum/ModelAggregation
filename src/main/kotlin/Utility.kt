@@ -11,7 +11,7 @@ fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
     var x: SimpleMatrix
     val mbarm = m.rightInverse().mult(m)
 
-    return untilAverageTolerance(1.0E-3) {
+    return untilAverageTolerance(1.0E-2) {
         x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
 
         specificCost(m, mbarm, f, x).pow(2.0)

@@ -20,7 +20,6 @@ open class SIRModel(private val recoveryRates: List<Double>, private val contact
         val res = SimpleMatrix(count * 3, 1)
 
         for (k in recoveryRates.indices) {
-
             val infectionRate = x[S(k)] * (0 until count).sumByDouble { l -> contactRates[k, l] * x[I(k)] }
             val recoveryRate = recoveryRates[k] * x[I(k)]
 
