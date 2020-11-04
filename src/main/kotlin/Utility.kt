@@ -1,8 +1,7 @@
 import org.ejml.simple.SimpleMatrix
 import java.io.File
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.sqrt
+import java.lang.Integer.max
+import kotlin.math.*
 
 const val MAX_X = 1000.0
 const val MIN_X = 0.0
@@ -11,6 +10,7 @@ fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, tolerance: Double =
     var x: SimpleMatrix
     val mbarm = m.rightInverse().mult(m)
 
+    println("COST")
     return untilAverageTolerance(1.0E-2) {
         x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
 
@@ -32,7 +32,7 @@ fun untilAverageTolerance(tolerance: Double, clusterSize: Int = 50, action: () -
 
         if (averages.size >= 5) {
             for (j in 0 until averages.size - 1)
-                averages[j] = averages[j+1]
+                averages[j] = averages[j + 1]
             averages[4] = averages[3] * i.toDouble() / (i + 1) + clusterAverage / (i + 1)
         } else {
             val na = if (averages.size > 1) averages.last() * i.toDouble() / (i + 1) + clusterAverage / (i + 1) else clusterAverage
@@ -65,19 +65,19 @@ fun randMatrix(numRows: Int, numCols: Int, from: Double, to: Double): SimpleMatr
     return m
 }
 
-fun SimpleMatrix.create(initializer: (Int, Int) -> Double) : SimpleMatrix {
+fun SimpleMatrix.create(initializer: (Int, Int) -> Double): SimpleMatrix {
     val s = SimpleMatrix(this.numRows(), this.numCols())
-    for(i in 0 until s.numRows()) {
-        for(j in 0 until s.numCols()) {
-            s[i, j] = initializer(i ,j)
+    for (i in 0 until s.numRows()) {
+        for (j in 0 until s.numCols()) {
+            s[i, j] = initializer(i, j)
         }
     }
     return s
 }
 
-fun SimpleMatrix.create(initializer: (Int) -> Double) : SimpleMatrix {
+fun SimpleMatrix.create(initializer: (Int) -> Double): SimpleMatrix {
     val s = SimpleMatrix(this.numRows(), this.numCols())
-    for(i in 0 until s.numElements) {
+    for (i in 0 until s.numElements) {
         s[i] = initializer(i)
     }
     return s
@@ -92,7 +92,7 @@ fun SimpleMatrix.allElements(): Iterable<Double> {
     return list
 }
 
-fun SimpleMatrix.hadamard(other: SimpleMatrix) : SimpleMatrix {
+fun SimpleMatrix.hadamard(other: SimpleMatrix): SimpleMatrix {
     return this.create { i ->
         this[i] * other[i]
     }
@@ -113,32 +113,32 @@ fun ClosedFloatingPointRange<Double>.iterator(step: (Double) -> Double): Iterato
     }
 }
 
-fun SimpleMatrix.normalize(): SimpleMatrix = this.create { i, j -> this[i,j] / this.normF() }
+fun SimpleMatrix.normalize(): SimpleMatrix = this.create { i, j -> this[i, j] / this.normF() }
 
 fun SimpleMatrix.rowNorm(): SimpleMatrix {
     val n = SimpleMatrix(this)
     for (i in 0 until this.numRows()) {
-        val magnitude = sqrt(rowVector(i).allElements().map{ it * it }.sum())
+        val magnitude = sqrt(rowVector(i).allElements().map { it * it }.sum())
         for (j in 0 until this.numCols()) {
-            n[i,j] = n[i,j] / magnitude
+            n[i, j] = n[i, j] / magnitude
         }
     }
-    return  n
+    return n
 }
 
 fun SimpleMatrix.colNorm(): SimpleMatrix {
     val n = SimpleMatrix(this)
     for (j in 0 until numCols()) {
-        val magnitude = sqrt(colVector(j).allElements().map{ it * it }.sum())
+        val magnitude = sqrt(colVector(j).allElements().map { it * it }.sum())
         for (i in 0 until numRows()) {
-            n[i,j] = n[i,j] / magnitude
+            n[i, j] = n[i, j] / magnitude
         }
     }
-    return  n
+    return n
 }
 
 fun SimpleMatrix.rowVector(r: Int): SimpleMatrix = SimpleMatrix(1, numCols()).create { i -> this[r, i] }
-fun SimpleMatrix.colVector(c: Int): SimpleMatrix = SimpleMatrix(numRows(), 1).create {i -> this[i, c]}
+fun SimpleMatrix.colVector(c: Int): SimpleMatrix = SimpleMatrix(numRows(), 1).create { i -> this[i, c] }
 
 
 fun Plot.saveWithExt(fileName: String = "plot") {
@@ -222,4 +222,74 @@ fun SimpleMatrix.setRow(row: Int, vector: SimpleMatrix): SimpleMatrix {
         }
     }
     return final
+}
+
+class Average {
+    var i = 0
+    var value = 0.0
+    fun add(value: Double) {
+        this.value = this.value * (i/(i+1)) + value * (1/(i+1))
+    }
+}
+
+data class OpenEndDoubleRange(val from: Double, val to: Double) {
+    val size = to - from
+}
+
+infix fun Double.until(to: Double) = OpenEndDoubleRange(this, to)
+operator fun OpenEndDoubleRange.contains(value: Double) = value < to && value >= from
+
+fun cost_vegas(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
+    val increments = Array(m.numCols()) {
+        MutableList(4) { it.toDouble() / 4.0 until (it + 1).toDouble() / 4.0 }
+    }
+    val mbarm = m.rightInverse().mult(m)
+
+    for (i in 0 until 10) {
+        // The function evaluations for each partition
+        val fs = Array(m.numCols()) { index -> Array(increments[index].size) { Average() } }
+        val ipp = max(1, 1000 / increments.sumOf { it.size }) // Iterations per partition
+
+        // Evaluate the specific cost at each partition ipp times
+        for ((dim, inc) in increments.withIndex()) {
+            for ((index, partition) in inc.withIndex()) {
+
+                // Evaluate in this partition
+                for (j in 0 until ipp) {
+                    val x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
+                    x[dim, 0] = randomP.nextDouble(partition.from, partition.to)
+
+                    val spc = specificCost(m, mbarm, f, x)
+                    // Add to all partitions that this x is in
+                    for ((index, inc) in increments.withIndex()) {
+                        val p = inc.indexOfFirst { x[index, 0] in it }
+                        fs[index][p].add(spc)
+                    }
+                }
+            }
+        }
+
+        // Update intervals for each dimension
+        for (dim in increments.indices) {
+            val total = fs[dim].sumOf { it.value }
+            for ((index, p) in increments[dim].withIndex()) {
+                // Calculate number of subdivisions
+                val s = (1000 * fs[dim][index].value / total).roundToInt()
+
+                // Create new subpartitions
+                if (s > 1) {
+                    val from = p.from
+                    val step = p.size / s
+                    increments[dim].removeAt(index)
+                    for (z in 0 until s)
+                        increments[dim].add(index + z, (from + step * z) until (from + step * (z+1)))
+                }
+            }
+
+        }
+
+
+    }
+
+    return 0.0
 }
