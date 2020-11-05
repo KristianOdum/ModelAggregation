@@ -1,15 +1,18 @@
+import gradientDescent.GradientDescent
+import gradientDescent.SimpleStep
 import utility.Plotter
+import utility.SIRModelCreator
 
 fun main() {
-    val plotter = Plotter()
+    val mi = SIRModelCreator().random(3, 1)
 
-    plotter.plot.xAxis("This axis", Plot.axisOpts())
+    val gd = GradientDescent(mi, SimpleStep(0.1))
 
-    val d = plotter.addSeries("Test")
+    println(gd.cost)
+    while (true) {
+        gd.iterate()
 
-    d.xy(0.0, 1.4)
-    d.xy(2.4, 8.5)
-
-    plotter.save()
+        println(gd.cost)
+    }
 
 }

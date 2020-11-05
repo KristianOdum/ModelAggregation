@@ -45,7 +45,7 @@ class SIRModelCreator: ModelCreator {
 
     override fun random(size: Int, reduction: Int): ModelInfo {
         val fc = 3 * size
-        return fromValues(randMatrix(fc - reduction, fc, -1.0 until 1.0), randMatrix(fc, 1, 0.0 until 1.0), randMatrix(fc, fc, 0.0 until 1.0))
+        return fromValues(randMatrix(fc - reduction, fc, -1.0 until 1.0), randMatrix(size, 1, 0.0 until 1.0), randMatrix(size, size, 0.0 until 1.0))
     }
 
 }
