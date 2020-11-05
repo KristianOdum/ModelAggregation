@@ -416,54 +416,9 @@ fun gradientDescent(f: (SimpleMatrix) -> SimpleMatrix, cost: (SimpleMatrix, (Sim
     return m
 }
 
-fun plotAlpha(m: SimpleMatrix, g: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Plot.Data {
-    val dataPoints = mutableListOf<Pair<Double, Double>>()
-    val plotCount = 100
-    runBlocking {
-        val dataPointMutex = Mutex()
-        val jobs = (0 until plotCount).map {
-            GlobalScope.launch {
-                val d = gss_b * it.toDouble() / plotCount
-                val c = oneDimensionalDerivative(m, g.negative(), d, f)
 
-                dataPointMutex.lock()
-                dataPoints.add(Pair(d, c))
-                dataPointMutex.unlock()
-            }
-        }
-        jobs.joinAll()
-    }
-    dataPoints.sortBy { it.first }
-    return Plot.data().xy(dataPoints.map { it.first }, dataPoints.map { it.second })
-}
 
-fun gss(cost: (Double) -> Double): Double {
-    var a = 0.0
-    var b = gss_b
-    var c = b - (b - a) / gr
-    var d = a + (b - a) / gr
 
-    var fc = cost(c)
-    var fd = cost(d)
-
-    while (abs(c - d) > gss_b * gss_tolerance) {
-        if (fc < fd) {
-            b = d
-            d = c
-            fd = fc
-            c = b - (b - a) / gr
-            fc = cost(c)
-        } else {
-            a = c
-            c = d
-            fc = fd
-            d = a + (b - a) / gr
-            fd = cost(d)
-        }
-    }
-
-    return (a + b) / 2
-}
 fun bis_derivative(derivative: (Double) -> Double): Double {
     var a = 0.0
 
