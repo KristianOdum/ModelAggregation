@@ -3,7 +3,7 @@ package utility
 import java.awt.Color
 import java.io.File
 
-class Plotter() {
+class Plotter {
     private data class Series(val name: String, val color: Color, val marker: Plot.Marker)
 
     val plot = Plot.plot(Plot.plotOpts())

@@ -1,6 +1,7 @@
 package utility
 
 import org.ejml.simple.SimpleMatrix
+import kotlin.math.pow
 
 class CostCalculator(modelFunction: (SimpleMatrix) -> SimpleMatrix): ModelIntegralCalculator(modelFunction) {
 
@@ -8,9 +9,9 @@ class CostCalculator(modelFunction: (SimpleMatrix) -> SimpleMatrix): ModelIntegr
         val mbarm = m.rightInverse().mult(m)
 
         return integral {
-            val x = randMatrix(m.numCols(), 0, xRange)
+            val x = randMatrix(m.numCols(), 1, xRange)
 
-            specificCost(m, mbarm, x)
+            specificCost(m, mbarm, x).pow(2.0)
         }
     }
 
