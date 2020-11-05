@@ -1,15 +1,15 @@
+import PSO.GeneralPSO
+import PSO.PSOInfo
+import org.ejml.simple.SimpleMatrix
+import utility.ModelInfo
 import utility.Plotter
+import utility.SIRModelCreator
 
 fun main() {
-    val plotter = Plotter()
-
-    plotter.plot.xAxis("This axis", Plot.axisOpts())
-
-    val d = plotter.addSeries("Test")
-
-    d.xy(0.0, 1.4)
-    d.xy(2.4, 8.5)
-
-    plotter.save()
-
+    val pso = GeneralPSO(SIRModelCreator().random(3,1), 1, 20, PSOInfo(3000))
+    repeat(3000){
+        pso.iterate()
+        println("$it: ${pso.swarms[0].globalBestCost}")
+    }
+    println("We done, best cost: ${pso.swarms[0].globalBestCost}")
 }
