@@ -12,9 +12,9 @@ abstract class GradientDescent(modelInfo: ModelInfo) {
     var gradient = SimpleMatrix()
         private set
 
-    private val modelFunction = modelInfo.function
-    private val costCalculator = CostCalculator(modelFunction)
-    private val derivativeCalculator = DerivativeCalculator(modelFunction)
+    protected val modelFunction = modelInfo.function
+    protected val costCalculator = CostCalculator(modelFunction)
+    protected val derivativeCalculator = DerivativeCalculator(modelFunction).apply { tolerance = 5.0E-1 }
 
     private var hasLumpingMatrixChanged = true
     var cost = Double.MAX_VALUE
