@@ -299,8 +299,6 @@ fun cost_vegas(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
             }
 
         }
-
-
     }
     return 0.0
 }
