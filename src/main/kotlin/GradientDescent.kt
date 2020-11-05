@@ -250,7 +250,7 @@ fun derivative(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, e: Int, toler
     val mp = m.withSet(e, m[e] + h).rowNorm()
     val mpbarmp = mp.rightInverse().mult(mp)
     val mn = m.withSet(e, m[e] - h).rowNorm()
-    val mnbarmn = mn.rightInverse().mult(mp)
+    val mnbarmn = mn.rightInverse().mult(mn)
 
     return untilAverageTolerance(tolerance) {
         x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
