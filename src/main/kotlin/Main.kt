@@ -15,13 +15,14 @@ val toyF = { x: SimpleMatrix ->
 
 val randomP = Random(System.currentTimeMillis())
 val global_sir = RandomSIR(1)
-val global_m = randMatrix(global_sir.functionsCount -1, global_sir.functionsCount, 0.0, 1.0)
+var global_m = randMatrix(global_sir.functionsCount - 2, global_sir.functionsCount, 0.9, 1.0)
 
 fun main() {
 
-    val m = gradientDescent(global_sir.function, ::cost, global_sir.functionsCount, global_sir.functionsCount - 1, 1000)
+    val t = global_m.rowVector(0)
+    global_m = global_m.setRow(0, global_m.rowVector(1))
+    global_m = global_m.setRow(1, t).MGSON()
 
-    println("-----------------")
-    println(cost(m, global_sir.function))
-    println(cost(m.rowNorm(), global_sir.function))
+
+    println(cost(global_m, global_sir.function))
 }

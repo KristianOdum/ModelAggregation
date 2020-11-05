@@ -278,7 +278,6 @@ fun derivative(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, e: Int): Doub
     val mp = m.withSet(e, m[e] + h1)
     val mpbarmp = mp.rightInverse().mult(mp)
 
-    val tempn = m[e] - h
     val mn = m.withSet(e,  m[e] - h2)
     val mnbarmn = mn.rightInverse().mult(mn)
 
