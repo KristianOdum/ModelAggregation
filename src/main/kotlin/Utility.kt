@@ -6,6 +6,14 @@ import kotlin.math.*
 const val MAX_X = 1000.0
 const val MIN_X = 0.0
 
+val toyF = { x: SimpleMatrix ->
+    val y = SimpleMatrix(x.numRows(), x.numCols())
+        y[0,0] = x[0,0] * x[2,0] + x[2,0]
+        y[1,0] = x[1,0] * x[2,0] + x[2,0]
+        y[2,0] = -x[2,0]
+        y
+}
+
 fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, tolerance: Double = 1.0E-2, clusterSize: Int = 50): Double {
     var x: SimpleMatrix
     val mbarm = m.rightInverse().mult(m)
