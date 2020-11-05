@@ -251,6 +251,7 @@ fun gradient(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): SimpleMatrix {
     val gradient = SimpleMatrix(m.numRows(), m.numCols())
     val mutex = Mutex()
     var i = 0
+    println("GRADIENT")
 
     runBlocking {
         val jobs = (0 until m.numElements).map {elem ->
@@ -281,7 +282,7 @@ fun derivative(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, e: Int): Doub
     val mn = m.withSet(e,  m[e] - h2)
     val mnbarmn = mn.rightInverse().mult(mn)
 
-    return untilAverageTolerance(1.0E-3) {
+    return untilAverageTolerance(1.0E-2) {
         val x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
 
         (specificCost(mp, mpbarmp, f, x) - specificCost(mn, mnbarmn, f, x)) / (h1 + h2)
