@@ -1,4 +1,3 @@
-
 # Created by https://www.toptal.com/developers/gitignore/api/kotlin
 # Edit at https://www.toptal.com/developers/gitignore?templates=kotlin
 
@@ -15,9 +14,16 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+
 target/
+/target/*
+
 plots/
+/plots/*
+
 saved/
+/saved/*
+
 
 # Package Files #
 *.jar
@@ -32,3 +38,7 @@ saved/
 hs_err_pid*
 
 # End of https://www.toptal.com/developers/gitignore/api/kotlin
+
+
+# Do not include plots
+/*.png

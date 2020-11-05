@@ -26,24 +26,3 @@ var global_i = 0
 
 fun main() { }
 
-fun averageNoise(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, epochs: Int, tolerance: Double) {
-    val start = Array(epochs) { 0.0 }
-    val average: Double
-    var averageNoiseSum = 0.0
-    val averageNoise: Double
-
-    for (i in 0 until epochs) {
-        start[i] = cost(m, f, tolerance, 50)
-        print("\r${((i.toDouble()/epochs.toDouble())*100).toInt()}%")
-    }
-
-    average = start.average()
-    println("Start cost: $average")
-
-    for (i in start)
-        averageNoiseSum += (average - i).absoluteValue
-
-    averageNoise = averageNoiseSum / epochs
-
-    println("\nCost is ${(averageNoise / start.average()) * 100}% off on average.")
-}
