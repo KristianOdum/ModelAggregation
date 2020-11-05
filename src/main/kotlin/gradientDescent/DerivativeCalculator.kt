@@ -6,7 +6,7 @@ import utility.rightInverse
 import utility.withSet
 import org.ejml.simple.SimpleMatrix
 
-class DerivativeCalculator(modelFunction: (SimpleMatrix) -> SimpleMatrix): ModelIntegralCalculator(modelFunction) {
+class DerivativeCalculator(modelFunction: (SimpleMatrix) -> SimpleMatrix) : ModelIntegralCalculator(modelFunction) {
     companion object {
         private const val h = 1.0E-8
     }
@@ -18,7 +18,7 @@ class DerivativeCalculator(modelFunction: (SimpleMatrix) -> SimpleMatrix): Model
         val mp = m.withSet(e, m[e] + h1)
         val mpbarmp = mp.rightInverse().mult(mp)
 
-        val mn = m.withSet(e,  m[e] - h2)
+        val mn = m.withSet(e, m[e] - h2)
         val mnbarmn = mn.rightInverse().mult(mn)
 
         return integral {
@@ -29,7 +29,7 @@ class DerivativeCalculator(modelFunction: (SimpleMatrix) -> SimpleMatrix): Model
 
 
     // Calculates d/dalpha C(m + d*alpha)
-    fun oneDimensionalDerivative(m: SimpleMatrix, d: SimpleMatrix, alpha: Double,): Double {
+    fun oneDimensionalDerivative(m: SimpleMatrix, d: SimpleMatrix, alpha: Double): Double {
         val h1 = (alpha + h) - alpha
         val h2 = -(alpha - h) + alpha
 

@@ -6,13 +6,13 @@ interface ModelCreator {
     fun random(size: Int, reduction: Int): ModelInfo
 }
 
-class ToyModelCreator: ModelCreator {
+class ToyModelCreator : ModelCreator {
     override fun random(size: Int, reduction: Int): ModelInfo {
         val toyF = { x: SimpleMatrix ->
             val y = SimpleMatrix(x.numRows(), x.numCols())
-            y[0,0] = x[0,0] * x[2,0] + x[2,0]
-            y[1,0] = x[1,0] * x[2,0] + x[2,0]
-            y[2,0] = -x[2,0]
+            y[0, 0] = x[0, 0] * x[2, 0] + x[2, 0]
+            y[1, 0] = x[1, 0] * x[2, 0] + x[2, 0]
+            y[2, 0] = -x[2, 0]
             y
         }
 
@@ -20,7 +20,7 @@ class ToyModelCreator: ModelCreator {
     }
 }
 
-class SIRModelCreator: ModelCreator {
+class SIRModelCreator : ModelCreator {
 
     fun fromValues(m: SimpleMatrix, recoveryRates: SimpleMatrix, contactRates: SimpleMatrix): ModelInfo {
         if (recoveryRates.numCols() != 1 || recoveryRates.numRows() != contactRates.numCols() || contactRates.numCols() != contactRates.numRows())
@@ -31,12 +31,12 @@ class SIRModelCreator: ModelCreator {
             val res = SimpleMatrix(count * 3, 1)
 
             for (k in 0 until recoveryRates.numElements) {
-                val infectionRate = x[3*k] * (0 until count).sumByDouble { l -> contactRates[k, l] * x[3*k+1] }
-                val recoveryRate = recoveryRates[k] * x[3*k+1]
+                val infectionRate = x[3 * k] * (0 until count).sumByDouble { l -> contactRates[k, l] * x[3 * k + 1] }
+                val recoveryRate = recoveryRates[k] * x[3 * k + 1]
 
-                res[3*k] = -infectionRate
-                res[3*k+1] = -recoveryRate + infectionRate
-                res[3*k+2] = recoveryRate
+                res[3 * k] = -infectionRate
+                res[3 * k + 1] = -recoveryRate + infectionRate
+                res[3 * k + 2] = recoveryRate
             }
             res
         }

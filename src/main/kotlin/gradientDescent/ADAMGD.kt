@@ -16,7 +16,7 @@ class ADAMGD(modelInfo: ModelInfo, private val learningRate: Double = 0.003) : G
     override fun step(): SimpleMatrix {
         val delta = lumpingMatrix.create { _ -> 0.0 }
 
-        for (i in 0 until lumpingMatrix.numElements){
+        for (i in 0 until lumpingMatrix.numElements) {
             adamM[i] = beta1 * adamM[i] + (1.0 - beta1) * gradient[i]
             adamV[i] = beta2 * adamV[i] + (1.0 - beta2) * gradient[i].pow(2.0)
 
