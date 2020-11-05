@@ -6,8 +6,6 @@ import utility.create
 import kotlin.math.*
 
 class ADAMGD(modelInfo: ModelInfo, private val learningRate: Double = 0.003) : GradientDescent(modelInfo) {
-    override val name: String = "ADAM"
-
     private val beta1 = 0.9
     private val beta2 = 0.999
     private val epsilon = 1.0E-8

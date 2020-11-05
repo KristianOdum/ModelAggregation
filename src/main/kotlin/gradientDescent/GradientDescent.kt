@@ -35,8 +35,6 @@ abstract class GradientDescent(modelInfo: ModelInfo) {
         lumpingMatrix = (lumpingMatrix + delta).MGSON()
     }
 
-    abstract val name: String
-
     protected abstract fun step(): SimpleMatrix
 
     private fun gradient(): SimpleMatrix {

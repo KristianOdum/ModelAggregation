@@ -6,8 +6,6 @@ import utility.create
 import kotlin.math.*
 
 class MomentumGD(modelInfo: ModelInfo, private val learningRate: Double = 0.003, val epochs: Int) : GradientDescent(modelInfo) {
-    override val name: String = "Momentum"
-
     private val velocities = lumpingMatrix.create { _ -> 0.0 }
     private var beta = 0.5
     private var betaMax = 0.9

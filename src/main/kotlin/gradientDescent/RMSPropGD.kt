@@ -6,8 +6,6 @@ import utility.create
 import kotlin.math.*
 
 class RMSPropGD(modelInfo: ModelInfo, val learningRate: Double = 0.003) : GradientDescent(modelInfo = modelInfo) {
-    override val name: String = "RMSProp"
-
     private val prevGradSquared = lumpingMatrix.create { _ -> 0.0 }
     private val gradSquared = lumpingMatrix.create { _ -> 0.0 }
     private val beta = 0.9
