@@ -1,12 +1,13 @@
 package utility
 
+import Plot
 import java.awt.Color
 import java.io.File
 
 class Plotter() {
     private data class Series(val name: String, val color: Color, val marker: Plot.Marker)
 
-    val plot = Plot.plot(Plot.plotOpts())
+    val plot: Plot = Plot.plot(Plot.plotOpts())
 
     private val series = mutableMapOf<Series, Plot.Data>()
 
@@ -36,5 +37,6 @@ class Plotter() {
             }
         }
     }
-
 }
+
+public fun Plot.Data.xy(x: Int, y:Double) = this.xy(x.toDouble(), y)

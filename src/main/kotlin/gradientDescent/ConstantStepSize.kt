@@ -3,7 +3,9 @@ package gradientDescent
 import org.ejml.simple.SimpleMatrix
 import utility.ModelInfo
 
-class SimpleGD(val modelInfo: ModelInfo, val learningRate: Double) : GradientDescent(modelInfo) {
+class SimpleGD(modelInfo: ModelInfo, private val learningRate: Double) : GradientDescent(modelInfo) {
+    override val name: String = "Simple Constant"
+
     override fun step(): SimpleMatrix {
         return lumpingMatrix + gradient.scale(-learningRate)
     }

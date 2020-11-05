@@ -12,9 +12,9 @@ abstract class GradientDescent(modelInfo: ModelInfo) {
     var gradient = SimpleMatrix()
         private set
 
-    private val modelFunction = modelInfo.function
-    private val costCalculator = CostCalculator(modelFunction)
-    private val derivativeCalculator = DerivativeCalculator(modelFunction)
+    protected val modelFunction = modelInfo.function
+    protected val costCalculator = CostCalculator(modelFunction)
+    protected val derivativeCalculator = DerivativeCalculator(modelFunction)
 
     private var hasLumpingMatrixChanged = true
     var cost = Double.MAX_VALUE
@@ -28,12 +28,14 @@ abstract class GradientDescent(modelInfo: ModelInfo) {
         private set;
 
     fun iterate() {
-        gradient = gradient().normalize()
+        gradient = gradient()
 
         val delta = step()
 
         lumpingMatrix = (lumpingMatrix + delta).MGSON()
     }
+
+    abstract val name: String
 
     protected abstract fun step(): SimpleMatrix
 
