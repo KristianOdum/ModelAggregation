@@ -3,7 +3,7 @@ package gradientDescent
 import org.ejml.simple.SimpleMatrix
 import utility.*
 
-class GradientDescent(modelInfo: ModelInfo, val step: GradientDescentStep) {
+abstract class GradientDescent(modelInfo: ModelInfo) {
     var lumpingMatrix = modelInfo.lumpingMatrix
         private set(value) {
             hasLumpingMatrixChanged = true
@@ -30,10 +30,12 @@ class GradientDescent(modelInfo: ModelInfo, val step: GradientDescentStep) {
     fun iterate() {
         gradient = gradient().normalize()
 
-        val delta = step.step(this)
+        val delta = step()
 
         lumpingMatrix = (lumpingMatrix + delta).MGSON()
     }
+
+    protected abstract fun step(): SimpleMatrix
 
     private fun gradient(): SimpleMatrix {
         return SimpleMatrix(lumpingMatrix.numRows(), lumpingMatrix.numCols()).create {
