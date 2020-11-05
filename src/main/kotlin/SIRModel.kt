@@ -14,13 +14,10 @@ open class SIRModel(private val recoveryRates: List<Double>, private val contact
     private fun I(k: Int) = 3 * k + 1
     private fun R(k: Int) = 3 * k + 2
 
-    private fun onlyI(m: SimpleMatrix) = m.allElements().withIndex().filter { it.index % 3 == 1 }.map { it.value }
-
     val function get() = { x: SimpleMatrix ->
         val res = SimpleMatrix(count * 3, 1)
 
         for (k in recoveryRates.indices) {
-
             val infectionRate = x[S(k)] * (0 until count).sumByDouble { l -> contactRates[k, l] * x[I(k)] }
             val recoveryRate = recoveryRates[k] * x[I(k)]
 

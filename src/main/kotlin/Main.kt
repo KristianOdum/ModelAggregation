@@ -14,29 +14,14 @@ val toyF = { x: SimpleMatrix ->
 }
 
 val randomP = Random(System.currentTimeMillis())
-val sirCount = 3
-val global_sir = RandomSIR(sirCount)
-var global_m = randMatrix(global_sir.functionsCount-1, global_sir.functionsCount, 0.0, 1.0)
-const val epochs = 100000
+val global_sir = RandomSIR(3)
+val global_m = randMatrix(global_sir.functionsCount -1, global_sir.functionsCount, 0.0, 1.0)
 
 fun main() {
-    /*for (i in 0..10) {
 
-        val rms = gradientDescentRMSProp(global_sir.function, epochs)
-        val adam = gradientDescentADAM(global_sir.function, epochs)
-        Plot.plot(Plot.plotOpts().title("RMS (Blue) and ADAM (red) | sir count = $sirCount | epocs = $epochs"))
-                .series("RMS", rms, Plot.seriesOpts().color(Color.BLUE))
-                .series("ADAM1", adam, Plot.seriesOpts().color(Color.RED)).saveWithExt()
-    }*/
-    //Random(System.currentTimeMillis())
-    val sir = RandomSIR(3)
+    val m = gradientDescent(global_sir.function, ::cost, global_sir.functionsCount, global_sir.functionsCount - 1, 1000)
 
-    val pso = ParticleSwarmOptimization(sir.function, sir.functionsCount, sir.functionsCount-1, 20)
-
-    File("datax.txt").delete()
-
-    for(i in 0..49){
-        println("$i")
-        pso.run(3000)
-    }
+    println("-----------------")
+    println(cost(m, global_sir.function))
+    println(cost(m.rowNorm(), global_sir.function))
 }
