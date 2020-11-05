@@ -1,4 +1,0 @@
-package GradientDescent
-
-interface GradientDescentStep {
-}
