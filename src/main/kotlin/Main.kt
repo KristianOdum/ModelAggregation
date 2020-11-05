@@ -1,8 +1,9 @@
-import PSO.ParticleSwarmOptimization
 import org.ejml.simple.SimpleMatrix
 import java.awt.Color
-import java.io.File
+import kotlin.math.absoluteValue
+import kotlin.math.log
 import kotlin.random.Random
+import kotlin.time.toDuration
 
 
 val toyF = { x: SimpleMatrix ->
@@ -16,27 +17,33 @@ val toyF = { x: SimpleMatrix ->
 val randomP = Random(System.currentTimeMillis())
 val sirCount = 3
 val global_sir = RandomSIR(sirCount)
-var global_m = randMatrix(global_sir.functionsCount-1, global_sir.functionsCount, 0.0, 1.0)
-const val epochs = 100000
+val sirF = global_sir.function
+var sirM = randMatrix(global_sir.functionsCount-1, global_sir.functionsCount, 0.4, 0.6)
+var toyM = randMatrix(2,3,0.0,1.0)
+const val epochs = 1000
 
-fun main() {
-    /*for (i in 0..10) {
+var global_i = 0
 
-        val rms = gradientDescentRMSProp(global_sir.function, epochs)
-        val adam = gradientDescentADAM(global_sir.function, epochs)
-        Plot.plot(Plot.plotOpts().title("RMS (Blue) and ADAM (red) | sir count = $sirCount | epocs = $epochs"))
-                .series("RMS", rms, Plot.seriesOpts().color(Color.BLUE))
-                .series("ADAM1", adam, Plot.seriesOpts().color(Color.RED)).saveWithExt()
-    }*/
-    //Random(System.currentTimeMillis())
-    val sir = RandomSIR(3)
+fun main() { }
 
-    val pso = ParticleSwarmOptimization(sir.function, sir.functionsCount, sir.functionsCount-1, 20)
+fun averageNoise(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, epochs: Int, tolerance: Double) {
+    val start = Array(epochs) { 0.0 }
+    val average: Double
+    var averageNoiseSum = 0.0
+    val averageNoise: Double
 
-    File("dataphi2.txt").delete()
-
-    for(i in 0..99){
-        println("$i")
-        pso.run(3000)
+    for (i in 0 until epochs) {
+        start[i] = cost(m, f, tolerance, 50)
+        print("\r${((i.toDouble()/epochs.toDouble())*100).toInt()}%")
     }
+
+    average = start.average()
+    println("Start cost: $average")
+
+    for (i in start)
+        averageNoiseSum += (average - i).absoluteValue
+
+    averageNoise = averageNoiseSum / epochs
+
+    println("\nCost is ${(averageNoise / start.average()) * 100}% off on average.")
 }

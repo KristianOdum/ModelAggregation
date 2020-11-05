@@ -7,18 +7,18 @@ import kotlin.math.sqrt
 const val MAX_X = 1000.0
 const val MIN_X = 0.0
 
-fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, tolerance: Double = 1.0E-1): Double {
+fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, tolerance: Double = 1.0E-2, clusterSize: Int = 50): Double {
     var x: SimpleMatrix
     val mbarm = m.rightInverse().mult(m)
 
-    return untilAverageTolerance(tolerance) {
+    return untilAverageTolerance(tolerance, clusterSize) {
         x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
 
         specificCost(m, mbarm, f, x).pow(2.0)
     }
 }
 
-fun untilAverageTolerance(tolerance: Double, clusterSize: Int = 1, action: () -> Double): Double {
+fun untilAverageTolerance(tolerance: Double, clusterSize: Int = 50, action: () -> Double): Double {
     val averages = mutableListOf<Double>()
     var i = 0
 

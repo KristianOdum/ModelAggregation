@@ -16,6 +16,8 @@
 .mtj.tmp/
 
 target/
+plots/
+saved/
 
 # Package Files #
 *.jar
