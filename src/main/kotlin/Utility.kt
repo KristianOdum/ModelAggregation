@@ -6,12 +6,19 @@ import kotlin.math.*
 const val MAX_X = 1000.0
 const val MIN_X = 0.0
 
-fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, tolerance: Double = 1.0E-2): Double {
+val toyF = { x: SimpleMatrix ->
+    val y = SimpleMatrix(x.numRows(), x.numCols())
+        y[0,0] = x[0,0] * x[2,0] + x[2,0]
+        y[1,0] = x[1,0] * x[2,0] + x[2,0]
+        y[2,0] = -x[2,0]
+        y
+}
+
+fun cost(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, tolerance: Double = 1.0E-2, clusterSize: Int = 50): Double {
     var x: SimpleMatrix
     val mbarm = m.rightInverse().mult(m)
 
-    println("COST")
-    return untilAverageTolerance(1.0E-2) {
+    return untilAverageTolerance(tolerance, clusterSize) {
         x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
 
         specificCost(m, mbarm, f, x).pow(2.0)
@@ -301,4 +308,26 @@ fun cost_vegas(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
         }
     }
     return 0.0
+}
+
+fun averageNoise(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, epochs: Int, tolerance: Double) {
+    val start = Array(epochs) { 0.0 }
+    val average: Double
+    var averageNoiseSum = 0.0
+    val averageNoise: Double
+
+    for (i in 0 until epochs) {
+        start[i] = cost(m, f, tolerance, 50)
+        print("\r${((i.toDouble()/epochs.toDouble())*100).toInt()}%")
+    }
+
+    average = start.average()
+    println("Start cost: $average")
+
+    for (i in start)
+        averageNoiseSum += (average - i).absoluteValue
+
+    averageNoise = averageNoiseSum / epochs
+
+    println("\nCost is ${(averageNoise / start.average()) * 100}% off on average.")
 }

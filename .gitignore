@@ -14,7 +14,16 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
+
+target/
 /target/*
+
+plots/
+/plots/*
+
+saved/
+/saved/*
+
 
 # Package Files #
 *.jar
