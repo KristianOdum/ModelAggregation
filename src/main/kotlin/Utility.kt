@@ -223,6 +223,18 @@ fun SimpleMatrix.setRow(row: Int, vector: SimpleMatrix): SimpleMatrix {
     return final
 }
 
+fun SimpleMatrix.withValues(vararg values: Double): SimpleMatrix {
+    if (values.size > numElements)
+        throw IllegalArgumentException("Cannot set more values than indices in matrix!")
+
+    val m = SimpleMatrix(this)
+    for (i in values.indices) {
+        m[i] = values[i]
+    }
+    return m
+}
+
+
 class Average {
     var i = 0
     var value = 0.0
@@ -289,7 +301,6 @@ fun cost_vegas(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
 
 
     }
-
     return 0.0
 }
 
