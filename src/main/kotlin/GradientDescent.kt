@@ -1,3 +1,5 @@
+/*
+
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -486,63 +488,7 @@ fun bis_derivative(derivative: (Double) -> Double): Double {
 
     return m
 }
+*/
 
-fun gradient(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): SimpleMatrix {
-    val gradient = SimpleMatrix(m.numRows(), m.numCols())
-    val mutex = Mutex()
-    var i = 0
-    println("GRADIENT")
 
-    runBlocking {
-        val jobs = (0 until m.numElements).map { elem ->
-            GlobalScope.launch {
-                val g = derivative(m, f, elem, tolerance, clusterSize = clusterSize)
-
-                mutex.lock()
-                i++
-                gradient[elem] = g
-                //print("\r${i.toDouble() / m.numElements}")
-                mutex.unlock()
-            }
-        }
-
-        jobs.joinAll()
-    }
-
-    return gradient
-}
-
-fun derivative(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, e: Int): Double {
-    val h1 = (m[e] + h) - m[e]
-    val h2 = -(m[e] - h) + m[e]
-
-    val mp = m.withSet(e, m[e] + h1)
-    val mpbarmp = mp.rightInverse().mult(mp)
-
-    val mn = m.withSet(e,  m[e] - h2)
-    val mnbarmn = mn.rightInverse().mult(mn)
-
-    return untilAverageTolerance(1.0E-2) {
-        val x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
-
-        (specificCost(mp, mpbarmp, f, x) - specificCost(mn, mnbarmn, f, x)) / (h1 + h2)
-    }
-}
-
-// Calculates d/dalpha C(m + d*alpha)
-fun oneDimensionalDerivative(m: SimpleMatrix, d: SimpleMatrix, alpha: Double, f: (SimpleMatrix) -> SimpleMatrix): Double {
-    val h1 = (alpha + h) - alpha
-    val h2 = -(alpha - h) + alpha
-
-    val mp = m.plus(d.scale(alpha + h1))
-    val mpbarmp = mp.rightInverse().mult(mp)
-
-    val mn = m.plus(d.scale(alpha - h2))
-    val mnbarmn = mn.rightInverse().mult(mn)
-
-    return untilAverageTolerance(1.0E-5) {
-        val x = randMatrix(m.numCols(), 1, MIN_X, MAX_X)
-        (specificCost(mp, mpbarmp, f, x) - specificCost(mn, mnbarmn, f, x)) / (h1 + h2)
-    }
-}
 

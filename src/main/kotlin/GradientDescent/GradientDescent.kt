@@ -1,4 +1,0 @@
-package GradientDescent
-
-class GradientDescent {
-}
