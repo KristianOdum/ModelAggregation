@@ -39,4 +39,4 @@ class Plotter {
     }
 }
 
-public fun Plot.Data.xy(x: Int, y:Double) = this.xy(x.toDouble(), y)
+public fun Plot.Data.xy(x: Int, y: Double) = this.xy(x.toDouble(), y)

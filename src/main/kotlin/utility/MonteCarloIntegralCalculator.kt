@@ -35,7 +35,7 @@ abstract class MonteCarloIntegralCalculator {
     }
 }
 
-abstract class ModelIntegralCalculator(val modelFunction: (SimpleMatrix) -> SimpleMatrix): MonteCarloIntegralCalculator() {
+abstract class ModelIntegralCalculator(val modelFunction: (SimpleMatrix) -> SimpleMatrix) : MonteCarloIntegralCalculator() {
     fun specificCost(m: SimpleMatrix, mbarm: SimpleMatrix, x: SimpleMatrix) =
             m.mult(modelFunction(x).minus(modelFunction(mbarm.mult(x)))).normF()
 }

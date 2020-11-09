@@ -19,7 +19,7 @@ abstract class ParticleSwarmOptimization<T>(val modelInfo: ModelInfo) where T : 
     }
 
     private fun updateSwarm(swarm: Swarm<T>) {
-        for (particle in swarm.particles){
+        for (particle in swarm.particles) {
             updateParticle(swarm, particle)
 
             val cost = costCalculator.cost(particle.position)

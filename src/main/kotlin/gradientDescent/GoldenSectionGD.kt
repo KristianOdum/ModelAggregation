@@ -5,7 +5,7 @@ import utility.CostCalculator
 import utility.ModelInfo
 import kotlin.math.abs
 
-class GoldenSectionGD(modelInfo: ModelInfo, var beta: Double = 1.0): GradientDescent(modelInfo) {
+class GoldenSectionGD(modelInfo: ModelInfo, var beta: Double = 1.0) : GradientDescent(modelInfo) {
     var tolerance = 1.0E-3
     var alpha = Double.NaN
         private set
@@ -17,9 +17,9 @@ class GoldenSectionGD(modelInfo: ModelInfo, var beta: Double = 1.0): GradientDes
     private val GSScostCalculator = CostCalculator(modelFunction)
 
     override fun step(): SimpleMatrix {
-        alpha = gss { s ->  GSScostCalculator.cost(lumpingMatrix + gradient.scale(-s)) }
+        alpha = gss { s -> GSScostCalculator.cost(lumpingMatrix + gradient.scale(-s)) }
 
-        beta = 0.6 * (beta - 2*alpha) + 2*alpha
+        beta = 0.6 * (beta - 2 * alpha) + 2 * alpha
 
         return gradient.scale(-alpha)
     }
