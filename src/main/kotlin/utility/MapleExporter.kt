@@ -22,9 +22,9 @@ class MapleExporter {
         return series[name]!!
     }
 
-    private var count = 0
     fun export(fileName: String = "Maple") {
         for (s in series.values) {
+            var count = 0
             val fn = s.name + "_" + fileName
             val fileData: String = s.points.joinToString("") { "${it.first}\t${it.second}\n" } // Important to use \t here, since it is maple default delimiter
 
@@ -36,7 +36,7 @@ class MapleExporter {
 
                 if (!exists) {
                     file.writeText(fileData)
-                    return
+                    break
                 }
             }
         }
