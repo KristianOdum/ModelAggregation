@@ -28,7 +28,7 @@ abstract class GradientDescent(modelInfo: ModelInfo) {
         private set;
 
     fun iterate() {
-        gradient = gradient()
+        gradient = gradient().normalize()
 
         val delta = step()
 

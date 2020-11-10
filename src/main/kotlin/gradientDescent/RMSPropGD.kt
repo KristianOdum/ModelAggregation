@@ -8,7 +8,7 @@ import kotlin.math.*
 class RMSPropGD(modelInfo: ModelInfo, val learningRate: Double = 0.003) : GradientDescent(modelInfo = modelInfo) {
     private val prevGradSquared = lumpingMatrix.create { _ -> 0.0 }
     private val gradSquared = lumpingMatrix.create { _ -> 0.0 }
-    private val beta = 0.9
+    private val beta = 0.98
     private val epsilon = 1.0E-8
 
     override fun step(): SimpleMatrix {
