@@ -22,10 +22,10 @@ class MapleExporter {
         return series[name]!!
     }
 
-    fun export(fileName: String = "Maple") {
+    fun export() {
         for (s in series.values) {
             var count = 0
-            val fn = s.name + "_" + fileName
+            val fn = s.name
             val fileData: String = s.points.joinToString("") { "${it.first}\t${it.second}\n" } // Important to use \t here, since it is maple default delimiter
 
             while (true) {
