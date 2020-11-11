@@ -4,7 +4,7 @@ import org.ejml.simple.SimpleMatrix
 import kotlin.math.abs
 
 abstract class MonteCarloIntegralCalculator {
-    var tolerance: Double = 1.0E-2
+    var tolerance: Double = 1.0E-3
     var clusterSize: Int = 50
     var xRange = 0.0 until 1000.0
 

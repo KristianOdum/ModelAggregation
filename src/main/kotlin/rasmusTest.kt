@@ -1,3 +1,10 @@
+import PSO.GeneralPSO
+import PSO.PSOInfo
+import PSO.ParticleSwarmOptimization
+import gradientDescent.DynamicGD
+import gradientDescent.GoldenSectionGD
+import gradientDescent.GradientDescent
+import gradientDescent.SimpleGD
 import org.ejml.simple.SimpleMatrix
 import utility.*
 import utility.vegas.IncrementPartition
@@ -10,16 +17,17 @@ import kotlin.random.Random
 
 fun main() {
 
-    val ip = IncrementPartition(4,  1.0)
+    val mi = SIRModelCreator().random(3, 1)
 
-    val mi = ToyModelCreator().random(0, 1)
-    repeat(10) {
-        println(CostCalculator(mi.function).apply { tolerance = 1.0E-5 }.cost(mi.lumpingMatrix))
-    }
-    println("<------------------------->")
+    val gd = GoldenSectionGD(mi)
 
-    repeat(10) {
-        println(cost_vegas(mi.lumpingMatrix, mi.function))
+    repeat(300) {
+        val bta = gd.beta
+        val m = gd.lumpingMatrix
+        gd.iterate()
+
+        plotAlpha(m, gd.gradient, mi.function, bta, gd.alpha)
+        println("${gd.cost}")
     }
 
 }
@@ -28,7 +36,7 @@ class Average {
     var i = 0
     var value = 0.0
     fun add(value: Double) {
-        this.value = this.value * (i/(i+1)) + value * (1/(i+1))
+        this.value = this.value * (i.toDouble()/(i+1)) + value * (1.0/(i+1))
     }
 }
 
@@ -38,7 +46,7 @@ fun cost_vegas(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
     }
     val mbarm = m.rightInverse().mult(m)
 
-    for (i in 0 until 4) {
+    for (i in 0 until 1) {
         // The function evaluations for each partition
         val fs = Array(m.numCols()) { index -> Array(increments[index].size) { Average() } }
         val ipp = max(1, 1000 / increments.sumOf { it.size }) // Iterations per partition
