@@ -8,10 +8,6 @@ open class DynamicGD(modelInfo: ModelInfo, var learningRate: Double = 0.003) : G
     private var learningRates = lumpingMatrix.create { _ -> learningRate }
     private var previousGradient = lumpingMatrix.create { _ -> 0.0 }
 
-    init {
-        costCalculator.tolerance = 1.0E-2
-    }
-
     override fun step(): SimpleMatrix {
         val delta = lumpingMatrix.create { _ -> 0.0 }
 
