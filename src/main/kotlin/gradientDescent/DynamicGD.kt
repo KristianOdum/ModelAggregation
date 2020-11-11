@@ -7,7 +7,7 @@ import utility.create
 open class DynamicGD(modelInfo: ModelInfo, var learningRate: Double = 0.003) : GradientDescent(modelInfo) {
     private var learningRates = lumpingMatrix.create { _ -> learningRate }
     private var previousGradient = lumpingMatrix.create { _ -> 0.0 }
-
+	
     override fun step(): SimpleMatrix {
         val delta = lumpingMatrix.create { _ -> 0.0 }
 
