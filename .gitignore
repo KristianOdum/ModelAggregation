@@ -21,6 +21,9 @@ target/
 plots/
 /plots/*
 
+maple/
+/maple/*
+
 saved/
 /saved/*
 
