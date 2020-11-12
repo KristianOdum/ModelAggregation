@@ -2,6 +2,7 @@ package utility.vegas
 
 import utility.OpenEndDoubleRange
 import utility.until
+import kotlin.random.Random
 
 open class IncrementPartition(initialIncrements: Int, private val maxValue: Double): Iterable<OpenEndDoubleRange> {
 
@@ -19,6 +20,8 @@ open class IncrementPartition(initialIncrements: Int, private val maxValue: Doub
             // Use the inverse insertion point and then the point before that
             return -i - 2
     }
+
+    fun randomIndex(): Int = Random.nextInt(size)
 
     fun partitionWith(x: Double): OpenEndDoubleRange = this[indexWith(x)]
 

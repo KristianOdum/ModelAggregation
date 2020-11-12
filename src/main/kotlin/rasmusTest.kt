@@ -1,4 +1,7 @@
+@file:Suppress("DuplicatedCode")
+
 import PSO.GeneralPSO
+import PSO.GradientDescentPSO
 import PSO.PSOInfo
 import PSO.ParticleSwarmOptimization
 import gradientDescent.DynamicGD
@@ -17,17 +20,13 @@ import kotlin.random.Random
 
 fun main() {
 
-    val mi = SIRModelCreator().random(3, 1)
+    val mi = SIRModelCreator().random(12, 1)
 
-    val gd = GoldenSectionGD(mi)
-
-    repeat(300) {
-        val bta = gd.beta
-        val m = gd.lumpingMatrix
-        gd.iterate()
-
-        plotAlpha(m, gd.gradient, mi.function, bta, gd.alpha)
-        println("${gd.cost}")
+    repeat(10) {
+        println(cost_vegas(mi.lumpingMatrix, mi.function) )
+    }
+    repeat(10) {
+        println(CostCalculator(mi.function).cost(mi.lumpingMatrix))
     }
 
 }
@@ -37,6 +36,7 @@ class Average {
     var value = 0.0
     fun add(value: Double) {
         this.value = this.value * (i.toDouble()/(i+1)) + value * (1.0/(i+1))
+        i++
     }
 }
 
@@ -46,29 +46,22 @@ fun cost_vegas(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
     }
     val mbarm = m.rightInverse().mult(m)
 
-    for (i in 0 until 1) {
+    for (i in 0 until 20) {
         // The function evaluations for each partition
         val fs = Array(m.numCols()) { index -> Array(increments[index].size) { Average() } }
-        val ipp = max(1, 1000 / increments.sumOf { it.size }) // Iterations per partition
 
-        // Evaluate the specific cost at each partition ipp times
-        for ((dim, inc) in increments.withIndex()) {
-            for ((index, partition) in inc.withIndex()) {
+        for (j in 0 until 1000) {
+            // Choose random partition from each dimension
+            val partitions = increments.map { it.randomIndex() }
 
-                // Evaluate in this partition
-                for (j in 0 until ipp) {
-                    val x = randMatrix(m.numCols(), 1, 0.0 until 1000.0)
+            // Create a random vector in these partitions
+            val x = SimpleMatrix(m.numCols(), 1)
+                    .create { it -> Random.nextDouble(increments[it][partitions[it]]) }
 
-                    // Fix one dimension within this partition
-                    x[dim, 0] = Random.nextDouble(partition.from, partition.to)
+            val c = specificCost(m, mbarm, x, f).pow(2.0)
 
-                    val spc = specificCost(m, mbarm, x, f).pow(2.0)
-                    // Add to all partitions that this x is in
-                    for ((index, inc) in increments.withIndex()) {
-                        val p = inc.indexWith(x[index, 0])
-                        fs[index][p].add(spc)
-                    }
-                }
+            for ((dim, pi) in partitions.withIndex()) {
+                fs[dim][pi].add(c)
             }
         }
 
@@ -78,41 +71,39 @@ fun cost_vegas(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
             increments[dim].subdivideAll(
                     (0 until increments[dim].size).map {
                         // Calculate each partitions relative function size
-                        (10 * fs[dim][it].value / total).roundToInt()
+                        (10.0 * fs[dim][it].value / total).roundToInt()
                     }
             )
         }
     }
 
-    var integral = BigDecimal(0.0)
-    var space = BigDecimal(0.0)
+    return calcIntegralWithPartitions(m, mbarm, f, increments)
+}
 
+fun calcIntegralWithPartitions(m: SimpleMatrix, mbarm: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, increments: Array<IncrementPartition>): Double {
+    var integral = BigDecimal.ONE
+    var space = BigDecimal.ZERO
     // Actually calculate the integral
-    val ipp = max(1, 1000000 / increments.sumOf { it.size }) // Iterations per partition
-    for ((dim, inc) in increments.withIndex()) {
-        for ((index, partition) in inc.withIndex()) {
-            // Evaluate in this partition
-            for (j in 0 until ipp) {
-                val x = randMatrix(m.numCols(), 1, 0.0 until 1000.0)
+    for (i in 0 until 100000) {
+        // Choose random partition from each dimension
+        val partitions = increments.map { it.randomIndex() }
 
-                // Fix one dimension within this partition
-                x[dim, 0] = Random.nextDouble(partition.from, partition.to)
+        // Create a random vector in these partitions
+        val x = SimpleMatrix(m.numCols(), 1)
+                .create { it -> Random.nextDouble(increments[it][partitions[it]]) }
 
-                val c = specificCost(m, mbarm, x, f).pow(2.0)
-                // Calculate the size of this space
-                var sp = 1.0
-                for ((index, inc) in increments.withIndex()) {
-                    sp *= inc.partitionWith(x[index, 0]).size
-                }
-                space += BigDecimal(sp)
-                integral += BigDecimal(c * sp)
-            }
-        }
+        val c = specificCost(m, mbarm, x, f).pow(2.0)
+        var sp = BigDecimal.ONE
+        for (k in partitions.indices)
+            sp *= increments[k][partitions[k]].size.toBigDecimal()
+
+        integral = integral.plus(c.toBigDecimal() * sp)
+        space = space.plus(sp)
     }
 
     return integral.divide(space, RoundingMode.HALF_UP).toDouble()
-
 }
+
 
 private fun specificCost(m: SimpleMatrix, mbarm: SimpleMatrix, x: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix) =
         m.mult(f(x).minus(f(mbarm.mult(x)))).normF()
