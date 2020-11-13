@@ -4,27 +4,24 @@ import utility.*
 import java.awt.Color
 import java.io.File
 import kotlin.math.log
+import kotlin.math.pow
 
 class GradientDescentTester {
     fun run() {
         val sirCount = 3
         var mi = SIRModelCreator().random(sirCount, 1)
         val iterations = 1
-        val epochs = 10000
-        val learningRate = 1.0E-8
+        val epochs = 100000
+        val learningRate = 3E-16
         val learningRateForDynamic = learningRate
-        val averageCount = 20
-
-        repeat(1000) {
-            if (CostCalculator(mi.function).cost(mi.lumpingMatrix) < 1.0E12)
-                mi = SIRModelCreator().random(sirCount, 1)
-        }
+        val averageCount = 2000
 
         val constant = Pair(SimpleGD(mi, learningRate), "Const")
         val dynamic = Pair(DynamicGD(mi, learningRateForDynamic), "Dyna")
         val extendedDynamic = Pair(ExtendedDynamicGD(mi, learningRateForDynamic), "ExtDyna")
         val rms = Pair(RMSPropGD(mi, learningRate), "RMS")
         val adam = Pair(BiasCorrectedADAMGD(mi, learningRate), "ADAM")
+        val lineSearch = Pair(GoldenSectionGD(mi), "Line Search")
         val momentum = Pair(MomentumGD(mi, learningRate, epochs), "Momentum")
         val plotter = Plotter()
         plotter.plot.yAxis("Log_10(cost)", Plot.axisOpts().range(-20.0, 12.0))
@@ -35,12 +32,14 @@ class GradientDescentTester {
         val rmsData = Pair(plotter.addSeries(rms.second, Color.GREEN), "Green")
         val adamData = Pair(plotter.addSeries(adam.second, Color.CYAN), "Cyan")
         val momentumData = Pair(plotter.addSeries(momentum.second, Color.BLACK), "Black")
+        val lineSearchData = Pair(plotter.addSeries(lineSearch.second, Color.MAGENTA), "Magenta")
 
 
         // out-commenting decides what methods to test
         val runThese = listOf(
-                //Pair(constant, constantData),
-                Pair(dynamic, dynamicData),
+                Pair(constant, constantData),
+                //Pair(lineSearch, lineSearchData),
+                //Pair(dynamic, dynamicData),
                 //Pair(rms, rmsData),
                 //Pair(adam, adamData),
                 //Pair(momentum, momentumData),
@@ -55,6 +54,9 @@ class GradientDescentTester {
 
         println("RUN: $plotTitle")
         for (j in 1..iterations) {
+            var plateauCounter = 0
+            var lastBest = Double.MAX_VALUE
+
             for (method in runThese.withIndex()) {
                 val mapleSeries = mapleExporter.series[method.value.first.second]!!
                 val plotterSeries = method.value.second.first
@@ -71,11 +73,26 @@ class GradientDescentTester {
                     if (c < best)
                         best = c
 
+                    if(best == lastBest) {
+                        plateauCounter++
+                        if (plateauCounter >= 100) {
+                            //method.value.first.first.learningRate *= 0.1
+                            plateauCounter = 0
+                            println("Plateau hit. lr -> ${method.value.first.first.learningRate}")
+                        }
+                    }
+                    if(best < lastBest) {
+                        lastBest = best
+                        plateauCounter = 0
+                    }
+
                     mapleSeries.xy(i, average)
                     plotterSeries.xy(i, log(average, 10.0))
-                    print("\r${method.value.first.second} -> ${((i.toDouble() / (epochs.toDouble())) * 100.0).toInt()}% : $c")
+                    print("\r${method.value.first.second} -> ${((i.toDouble() / (epochs.toDouble())) * 100.0).toInt()}% : $average")
+
+                    if (c < 1.0E-19 && plateauCounter >= 90)
+                        break
                 }
-                println()
                 plotter.save()
             }
         }

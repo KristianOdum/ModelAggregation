@@ -17,7 +17,11 @@ class GoldenSectionGD(modelInfo: ModelInfo, var beta: Double = 1.0) : GradientDe
         private const val goldenRatio = 1.61803398875
     }
 
-    private val GSScostCalculator = CostCalculator(modelFunction)
+    private val GSScostCalculator = CostCalculator(modelFunction).apply { tolerance = 1.0E-2 }
+
+    init {
+        derivativeCalculator.apply { tolerance = 1.0E-2 }
+    }
 
     override fun step(): SimpleMatrix {
         alpha = gss { s -> GSScostCalculator.cost((lumpingMatrix + gradient.scale(-s)).rowNorm()) }
