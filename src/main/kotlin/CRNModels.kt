@@ -9,7 +9,7 @@ import kotlin.math.pow
 class T10ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {
         return ModelInfo(
-                randMatrix(29 - reduction, 29, -1.0 until 1.0).MGSON())
+                randMatrix(27 - reduction, 27, -1.0 until 1.0).MGSON())
         { y: SimpleMatrix ->
             val dy = SimpleMatrix(y)
 
@@ -49,11 +49,10 @@ class T10ModelCreator  {
     }
 }
 
-
 class T11ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {
         return ModelInfo(
-                randMatrix(83 - reduction, 83, -1.0 until 1.0).MGSON())
+                randMatrix(27 - reduction, 27, -1.0 until 1.0).MGSON())
         { y: SimpleMatrix ->
             val dy = SimpleMatrix(y)
 
@@ -147,12 +146,10 @@ class T11ModelCreator  {
     }
 }
 
-
-
 class T12ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {
         return ModelInfo(
-                randMatrix(88 - reduction, 88, -1.0 until 1.0).MGSON())
+                randMatrix(16 - reduction, 16, -1.0 until 1.0).MGSON())
         { y: SimpleMatrix ->
             val dy = SimpleMatrix(y)
 
@@ -251,11 +248,10 @@ class T12ModelCreator  {
     }
 }
 
-
 class T13ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {
         return ModelInfo(
-                randMatrix(70 - reduction, 70, -1.0 until 1.0).MGSON())
+                randMatrix(22 - reduction, 22, -1.0 until 1.0).MGSON())
         { y: SimpleMatrix ->
             val dy = SimpleMatrix(y)
 

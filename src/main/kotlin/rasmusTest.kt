@@ -15,7 +15,7 @@ import kotlin.random.Random
 
 fun main() {
     val cfot = CostFunctionOptimizerTester(300, 10) {
-        val mi = SIRModelCreator().random(3, 1)
+        val mi = T11ModelCreator().createModel(1)
         GoldenSectionGD(mi)
     }
 

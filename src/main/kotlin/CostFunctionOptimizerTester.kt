@@ -19,9 +19,10 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
         val dataMutex = Mutex()
         var dataBuffer = ""
         data.createNewFile()
+        var completed = 0
 
         runBlocking {
-            val jobs = (0 until iterations).map { GlobalScope.launch {
+            val jobs = (0 until iterations).map { threadID -> GlobalScope.launch {
                 var plateauCounter = 0
                 var lastBestCost = Double.MAX_VALUE
                 val cfo = factory()
@@ -38,17 +39,20 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
                         }
                         i++
 
-                        println("$lastBestCost")
+                        println("${i.toDouble() /  maxEpochs}")
                     }
                 }
 
                 dataMutex.lock()
+                completed++
 
                 dataBuffer += "$i ${cfo.bestCost} $time\n"
                 if (dataBuffer.length > 100) {
                     data.appendText(dataBuffer)
                     dataBuffer = ""
                 }
+
+                print("\r${completed.toDouble() / iterations}")
 
                 dataMutex.unlock()
             } }

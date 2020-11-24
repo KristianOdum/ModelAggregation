@@ -15,7 +15,7 @@ abstract class GradientDescent(modelInfo: ModelInfo, var updateGradient: Boolean
 
     protected val modelFunction = modelInfo.function
     protected val costCalculator = CostCalculator(modelFunction)
-    protected val derivativeCalculator = DerivativeCalculator(modelFunction).apply { tolerance = 0.1 }
+    protected val derivativeCalculator = DerivativeCalculator(modelFunction).apply { tolerance = 1.0 }
 
     private var hasLumpingMatrixChanged = true
     var cost = Double.MAX_VALUE
