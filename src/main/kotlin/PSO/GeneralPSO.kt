@@ -16,7 +16,7 @@ class GeneralPSO(modelInfo: ModelInfo, val swarmCount: Int, particleCount: Int, 
 
         val newVelocity = particle.velocity.scale(psoInfo.omegaMax - (psoInfo.omegaMax - psoInfo.omegaMin) / psoInfo.maxIterations * swarm.currentIteration) +
                 particle.bestPosition.minus(particle.position).hadamard(randNumsParticle).scale(psoInfo.accelParticle) +
-                calcLocalBestPosition(swarm, particle, psoInfo.neighborhoodSize).minus(particle.position).hadamard(randNumsLocal).scale(psoInfo.accelLocal) +
+                //calcLocalBestPosition(swarm, particle, psoInfo.neighborhoodSize).minus(particle.position).hadamard(randNumsLocal).scale(psoInfo.accelLocal) +
                 swarm.globalBestPosition.minus(particle.position).hadamard(randNumsGlobal).scale(psoInfo.accelGlobal)
 
         particle.velocity = checkVelocityBound(newVelocity, psoInfo)

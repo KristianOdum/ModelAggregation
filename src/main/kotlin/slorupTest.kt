@@ -1,19 +1,12 @@
-import PSO.EPSO
 import PSO.GeneralPSO
-import PSO.GradientDescentPSO
 import PSO.PSOInfo
-import gradientDescent.DynamicGD
-import utility.CostCalculator
-import utility.SIRModelCreator
 
-fun main(){
-    val mi = T11ModelCreator().createModel(1)
-    val cc = CostCalculator(mi.function)
-    val pso = GeneralPSO(mi, 1, 10, PSOInfo(3000))
-
-    repeat(3000){
-        pso.iterate()
+fun main() {
+    val cfot = CostFunctionOptimizerTester(3000, 4) {
+        val mi = T12ModelCreator().createModel(1)
+        GeneralPSO(mi,1,20,PSOInfo(3000))
     }
-    println(pso.swarms.first().globalBestCost)
+
+    cfot.run()
 }
 
