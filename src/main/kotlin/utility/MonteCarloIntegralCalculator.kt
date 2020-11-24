@@ -2,15 +2,12 @@ package utility
 
 import Average
 import org.ejml.simple.SimpleMatrix
-import kotlin.math.abs
-import kotlin.math.log10
 import kotlin.math.pow
-import kotlin.math.sqrt
 
 abstract class MonteCarloIntegralCalculator {
-    var tolerance: Double = 0.1
+    var tolerance: Double = 0.01
     var clusterSize: Int = 50
-    var xRange = 0.0 until 1000.0
+    var xRange = 1.0 until 100.0
 
     var plotter = MapleExporter()
     var plotdata = plotter.addSeries("Integration")
@@ -19,10 +16,10 @@ abstract class MonteCarloIntegralCalculator {
         var integral = Average()
         var integral2 = Average()
         var i = 0L
-        var sigmaSquared = Double.MAX_VALUE
+        var sigma2 = Double.MAX_VALUE
         val tolerance2 = tolerance.pow(2)
 
-        while (sigmaSquared > tolerance2) {
+        while (sigma2 > tolerance2 * integral.value.pow(2)) {
             val a = action()
 
             integral.add(a)
@@ -30,18 +27,10 @@ abstract class MonteCarloIntegralCalculator {
 
             i++
 
-            if (i > 1000)
-                sigmaSquared = sigmaSquared(integral.value, integral2.value, i)
-
-            if (i % 1_000_000 == 0L) {
-                plotdata.xy((i / 1_000_000L).toInt(), integral.value)
-                print("\r${i.toDouble() / 10_000_000_000L}")
+            if (i > 10) {
+                sigma2 = sigmaSquared(integral.value, integral2.value, i)
             }
 
-            if (i > 10_000_000_000L) {
-                plotter.export()
-                return integral.value
-            }
         }
 
         return integral.value

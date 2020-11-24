@@ -19,7 +19,7 @@ import kotlin.math.*
 import kotlin.random.Random
 
 fun main() {
-    val mi = Test3ModelCreator().createModel(1)
+    val mi = T10ModelCreator().createModel(1)
 
     val m = mi.lumpingMatrix
     val mbarm = m.rightInverse().mult(m)
