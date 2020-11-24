@@ -34,6 +34,8 @@ class MapleExporter {
                 val exists = file.exists()
                 count++
 
+                file.mkdirs()
+
                 if (!exists) {
                     file.writeText(fileData)
                     break

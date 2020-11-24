@@ -11,28 +11,29 @@ import gradientDescent.SimpleGD
 import org.ejml.simple.SimpleMatrix
 import utility.*
 import utility.vegas.IncrementPartition
+import utility.vegas.removeRange
 import java.lang.Integer.max
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.math.pow
-import kotlin.math.roundToInt
+import kotlin.math.*
 import kotlin.random.Random
 
 fun main() {
+    val mi = Test3ModelCreator().createModel(1)
 
-    val mi = SIRModelCreator().random(12, 1)
+    val m = mi.lumpingMatrix
+    val mbarm = m.rightInverse().mult(m)
+
+    val x = randMatrix(m.numCols(), 1, 0.0 until 1000.0)
 
     repeat(10) {
-        println(cost_vegas(mi.lumpingMatrix, mi.function) )
-    }
-    repeat(10) {
-        println(CostCalculator(mi.function).cost(mi.lumpingMatrix))
+        println(cost_vegas(m, mi.function))
     }
 
 }
 
 class Average {
-    var i = 0
+    var i = 0L
     var value = 0.0
     fun add(value: Double) {
         this.value = this.value * (i.toDouble()/(i+1)) + value * (1.0/(i+1))
@@ -40,17 +41,27 @@ class Average {
     }
 }
 
+const val incrementCount = 50
+const val subdivisionCount = 1000
+const val convergenceRate = 0.8
 fun cost_vegas(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
     val increments = Array(m.numCols()) {
-        IncrementPartition(4, 1000.0)
+        IncrementPartition(incrementCount, 1000.0)
     }
     val mbarm = m.rightInverse().mult(m)
+    val lastSubdivisionCounts = Array(m.numCols()) {
+        Array(incrementCount) { 0 }
+    }
+    // Calculate the subdivisionCount to be divisible by increment count
+    val K = (subdivisionCount.toDouble() / incrementCount).roundToInt() * incrementCount
 
-    for (i in 0 until 20) {
+    val unfinishedDimensions = increments.indices.toMutableSet()
+
+    partitioning@while (unfinishedDimensions.isNotEmpty()) {
         // The function evaluations for each partition
         val fs = Array(m.numCols()) { index -> Array(increments[index].size) { Average() } }
 
-        for (j in 0 until 1000) {
+        for (j in 0 until 1000000) {
             // Choose random partition from each dimension
             val partitions = increments.map { it.randomIndex() }
 
@@ -66,14 +77,35 @@ fun cost_vegas(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
         }
 
         // Update intervals for each dimension
-        for (dim in increments.indices) {
-            val total = fs[dim].sumOf { it.value }
-            increments[dim].subdivideAll(
-                    (0 until increments[dim].size).map {
-                        // Calculate each partitions relative function size
-                        (10.0 * fs[dim][it].value / total).roundToInt()
-                    }
-            )
+        subdivision@for (dim in unfinishedDimensions.toList()) {
+            // Calculate estimated area in each partition
+            val incrementArea = (0 until increments[dim].size).map {
+                fs[dim][it].value * increments[dim][it].size
+            }
+
+            // Calculate the total area
+            val totalArea = incrementArea.sum()
+
+            // Calculate subdivisions
+            val ms = incrementArea.map {
+                val r = it / totalArea
+                (K * ((r-1)/log2(r)).pow(convergenceRate) / 10.0).roundToInt() + 1
+            }
+
+            val g = incrementArea.map { abs(it - totalArea / incrementArea.size) }.average()
+            if (dim == 1)
+                println(g)
+
+            // If all the partitions have equal partitioning we are done
+            val e = (K + incrementCount) / incrementCount // Expected
+            if (ms.all { abs(it - e) <= 1 }) {
+                unfinishedDimensions.remove(dim)
+                continue@subdivision
+            }
+
+            // Subdivide and merge back
+            increments[dim].subdivideAll(ms)
+            increments[dim].mergeToInitialSize()
         }
     }
 
@@ -81,8 +113,8 @@ fun cost_vegas(m: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix): Double {
 }
 
 fun calcIntegralWithPartitions(m: SimpleMatrix, mbarm: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, increments: Array<IncrementPartition>): Double {
-    var integral = BigDecimal.ONE
-    var space = BigDecimal.ZERO
+    var integral = 1.0
+    var space = 0.0
     // Actually calculate the integral
     for (i in 0 until 100000) {
         // Choose random partition from each dimension
@@ -93,15 +125,15 @@ fun calcIntegralWithPartitions(m: SimpleMatrix, mbarm: SimpleMatrix, f: (SimpleM
                 .create { it -> Random.nextDouble(increments[it][partitions[it]]) }
 
         val c = specificCost(m, mbarm, x, f).pow(2.0)
-        var sp = BigDecimal.ONE
+        var sp = 1.0
         for (k in partitions.indices)
-            sp *= increments[k][partitions[k]].size.toBigDecimal()
+            sp *= increments[k][partitions[k]].size
 
-        integral = integral.plus(c.toBigDecimal() * sp)
-        space = space.plus(sp)
+        integral += c * sp
+        space += sp
     }
 
-    return integral.divide(space, RoundingMode.HALF_UP).toDouble()
+    return integral / space
 }
 
 

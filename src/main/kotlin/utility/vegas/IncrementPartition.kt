@@ -2,9 +2,14 @@ package utility.vegas
 
 import utility.OpenEndDoubleRange
 import utility.until
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
-open class IncrementPartition(initialIncrements: Int, private val maxValue: Double): Iterable<OpenEndDoubleRange> {
+fun <T> MutableList<T>.removeRange(range: IntRange) {
+    range.forEach { this.removeAt(range.first) }
+}
+
+open class IncrementPartition(val initialIncrements: Int, private val maxValue: Double): Iterable<OpenEndDoubleRange> {
 
     private val increments = MutableList(initialIncrements) { maxValue * it / initialIncrements }
 
@@ -40,6 +45,22 @@ open class IncrementPartition(initialIncrements: Int, private val maxValue: Doub
         for ((i,c) in counts.withIndex().filter { it.value > 1 }) {
             subdivide(i + offset, c)
             offset += c - 1
+        }
+    }
+
+    fun mergeToInitialSize() {
+        // Reduction factor, how many to include in each new increment
+        val r = size.toDouble() / initialIncrements
+
+        // Reduction Offset, the amount that is currently under/over accounted for
+        var ro = 0.0
+
+        for (i in 0 until initialIncrements) {
+            // Number of increments in this merge
+            val n = (r - ro).roundToInt()
+            ro += n - r
+
+            increments.removeRange(i + 1 until i + n)
         }
     }
 
