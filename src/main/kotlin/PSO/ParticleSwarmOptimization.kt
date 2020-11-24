@@ -15,7 +15,7 @@ abstract class ParticleSwarmOptimization<T>(val modelInfo: ModelInfo) : CostFunc
 
     val particleCount get() = swarms.sumOf { it.particles.size }
 
-    val bestCost get() = swarms.maxBy { it.globalBestCost }!!.globalBestCost
+    override val bestCost get() = swarms.maxByOrNull { it.globalBestCost }!!.globalBestCost
 
     override fun iterate() {
         swarms.forEach { it.currentIteration++; updateSwarm(it) }

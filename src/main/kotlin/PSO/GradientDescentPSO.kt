@@ -4,7 +4,7 @@ import gradientDescent.GradientDescent
 import utility.*
 
 class GradientDescentParticle<GDType>(columns: Int, rows: Int, bounds: OpenEndDoubleRange, factory: () -> GDType) : Particle(columns, rows, bounds) where GDType : GradientDescent {
-    val gd = factory()
+    val gd = factory().apply { updateGradient = false }
     var plateauCount = 0
 
     override var bestCost: Double = Double.MAX_VALUE
@@ -32,7 +32,7 @@ class GradientDescentPSO<GDType>(modelInfo: ModelInfo, swarmCount: Int, particle
             gd.apply {
                 updateGradient()
                 gradient = (gradient - (swarm.globalBestPosition - lumpingMatrix).scale(0.2)).normalize()
-                iterate(false)
+                iterate()
             }
             position = gd.lumpingMatrix
         }

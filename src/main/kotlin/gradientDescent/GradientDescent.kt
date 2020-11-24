@@ -1,9 +1,10 @@
 package gradientDescent
 
+import CostFunctionOptimizer
 import org.ejml.simple.SimpleMatrix
 import utility.*
 
-abstract class GradientDescent(modelInfo: ModelInfo) {
+abstract class GradientDescent(modelInfo: ModelInfo, var updateGradient: Boolean = true) : CostFunctionOptimizer {
     var lumpingMatrix = modelInfo.lumpingMatrix
         set(value) {
             hasLumpingMatrixChanged = true
@@ -14,7 +15,7 @@ abstract class GradientDescent(modelInfo: ModelInfo) {
 
     protected val modelFunction = modelInfo.function
     protected val costCalculator = CostCalculator(modelFunction)
-    protected val derivativeCalculator = DerivativeCalculator(modelFunction)
+    protected val derivativeCalculator = DerivativeCalculator(modelFunction).apply { tolerance = 0.1 }
 
     private var hasLumpingMatrixChanged = true
     var cost = Double.MAX_VALUE
@@ -22,18 +23,23 @@ abstract class GradientDescent(modelInfo: ModelInfo) {
             if (hasLumpingMatrixChanged) {
                 hasLumpingMatrixChanged = false
                 field = costCalculator.cost(lumpingMatrix)
+                if (field < bestCost) {
+                    bestCost = field
+                }
             }
             return field
     }
-        private set;
+        private set
+    override var bestCost = Double.MAX_VALUE
 
-    fun iterate(updateGradient: Boolean = true) {
+    override fun iterate() {
         if (updateGradient)
             updateGradient()
 
         val delta = step()
 
         lumpingMatrix = (lumpingMatrix + delta).MGSON()
+        cost
     }
 
     fun updateGradient() {

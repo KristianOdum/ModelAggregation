@@ -5,7 +5,7 @@ import org.ejml.simple.SimpleMatrix
 import kotlin.math.pow
 
 abstract class MonteCarloIntegralCalculator {
-    var tolerance: Double = 0.01
+    var tolerance: Double = 0.1
     var clusterSize: Int = 50
     var xRange = 1.0 until 100.0
 
@@ -13,13 +13,13 @@ abstract class MonteCarloIntegralCalculator {
     var plotdata = plotter.addSeries("Integration")
 
     protected fun integral(action: () -> Double): Double {
-        var integral = Average()
-        var integral2 = Average()
+        val integral = Average()
+        val integral2 = Average()
         var i = 0L
         var sigma2 = Double.MAX_VALUE
         val tolerance2 = tolerance.pow(2)
 
-        while (sigma2 > tolerance2 * integral.value.pow(2)) {
+        while (i < 1000 || sigma2 > tolerance2 * integral.value.pow(2)) {
             val a = action()
 
             integral.add(a)

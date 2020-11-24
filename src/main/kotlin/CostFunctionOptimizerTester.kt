@@ -11,7 +11,7 @@ import kotlin.time.measureTime
 class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterations: Int, val factory: () -> CostFunctionOptimizer)  {
 
     companion object {
-        private const val MAX_PLATEAU = 15
+        private const val MAX_PLATEAU = 25
     }
 
     fun run() {
@@ -27,7 +27,7 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
                 val cfo = factory()
                 var i = 0
                 val time = measureTimeMillis {
-                    while (plateauCounter < MAX_PLATEAU || lastBestCost <= 1.0E-8 || i >= maxEpochs) {
+                    while (plateauCounter < MAX_PLATEAU && lastBestCost >= 1.0E-8 && i < maxEpochs) {
                         cfo.iterate()
 
                         if (cfo.bestCost >= lastBestCost)
@@ -37,12 +37,14 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
                             lastBestCost = cfo.bestCost
                         }
                         i++
+
+                        println("$lastBestCost")
                     }
                 }
 
                 dataMutex.lock()
 
-                dataBuffer += "${cfo.bestCost} $time\n"
+                dataBuffer += "$i ${cfo.bestCost} $time\n"
                 if (dataBuffer.length > 100) {
                     data.appendText(dataBuffer)
                     dataBuffer = ""
@@ -53,6 +55,8 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
 
             jobs.joinAll()
         }
+
+        data.appendText(dataBuffer)
     }
 
 }
