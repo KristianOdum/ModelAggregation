@@ -21,6 +21,7 @@ abstract class ParticleSwarmOptimization<T>(val modelInfo: ModelInfo) where T : 
     }
 
     private fun updateSwarm(swarm: Swarm<T>) {
+        var swarmImproved = false
         for (particle in swarm.particles) {
             updateParticle(swarm, particle)
 
@@ -32,9 +33,14 @@ abstract class ParticleSwarmOptimization<T>(val modelInfo: ModelInfo) where T : 
                 if (cost < swarm.globalBestCost) {
                     swarm.globalBestPosition = particle.position
                     swarm.globalBestCost = cost
+                    swarmImproved = true
                 }
             }
         }
+        if(swarmImproved)
+            swarm.stagnationCount = 0
+        else
+            swarm.stagnationCount++
     }
 
     abstract fun updateParticle(swarm: Swarm<T>, particle: T)
@@ -45,6 +51,7 @@ class Swarm<T>(val particles: MutableList<T>) where T : Particle {
     var globalBestPosition: SimpleMatrix
     var globalBestCost: Double
     var currentIteration = 0
+    var stagnationCount = 0
 
     init {
         val (bestStartPosition, bestStartCost) = particles.map { Pair(it.position, it.bestCost) }.minByOrNull { it.second }!!
