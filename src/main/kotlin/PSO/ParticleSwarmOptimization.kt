@@ -1,5 +1,6 @@
 package PSO
 
+import CostFunctionOptimizer
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -8,13 +9,13 @@ import kotlinx.coroutines.sync.Mutex
 import org.ejml.simple.SimpleMatrix
 import utility.*
 
-abstract class ParticleSwarmOptimization<T>(val modelInfo: ModelInfo) where T : Particle {
+abstract class ParticleSwarmOptimization<T>(val modelInfo: ModelInfo) : CostFunctionOptimizer where T : Particle {
     val costCalculator = CostCalculator(modelInfo.function)
     abstract var swarms: MutableList<Swarm<T>>
 
     abstract fun initializeParticles(): List<T>
 
-    fun iterate() {
+    override fun iterate() {
         swarms.forEach { it.currentIteration++; updateSwarm(it) }
     }
 

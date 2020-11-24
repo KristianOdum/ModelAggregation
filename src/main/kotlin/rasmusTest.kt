@@ -1,3 +1,5 @@
+import gradientDescent.GoldenSectionGD
+import gradientDescent.GradientDescent
 import org.ejml.simple.SimpleMatrix
 import utility.*
 import utility.vegas.IncrementPartition
@@ -9,19 +11,12 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 fun main() {
-
-    val ip = IncrementPartition(4,  1.0)
-
-    val mi = ToyModelCreator().random(0, 1)
-    repeat(10) {
-        println(CostCalculator(mi.function).apply { tolerance = 1.0E-5 }.cost(mi.lumpingMatrix))
-    }
-    println("<------------------------->")
-
-    repeat(10) {
-        println(cost_vegas(mi.lumpingMatrix, mi.function))
+    val cfot = CostFunctionOptimizerTester(200, 10) {
+        val mi = SIRModelCreator().random(3, 1)
+        GoldenSectionGD(mi)
     }
 
+    cfot.run()
 }
 
 class Average {

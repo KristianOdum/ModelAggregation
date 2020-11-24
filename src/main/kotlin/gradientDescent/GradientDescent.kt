@@ -1,9 +1,10 @@
 package gradientDescent
 
+import CostFunctionOptimizer
 import org.ejml.simple.SimpleMatrix
 import utility.*
 
-abstract class GradientDescent(modelInfo: ModelInfo) {
+abstract class GradientDescent(modelInfo: ModelInfo) : CostFunctionOptimizer {
     var lumpingMatrix = modelInfo.lumpingMatrix
         private set(value) {
             hasLumpingMatrixChanged = true
@@ -22,12 +23,15 @@ abstract class GradientDescent(modelInfo: ModelInfo) {
             if (hasLumpingMatrixChanged) {
                 hasLumpingMatrixChanged = false
                 field = costCalculator.cost(lumpingMatrix)
+                if (field < bestCost)
+                    bestCost = field
             }
             return field
     }
         private set;
+    override var bestCost = Double.MAX_VALUE
 
-    fun iterate() {
+    override fun iterate() {
         gradient = gradient()
 
         val delta = step()

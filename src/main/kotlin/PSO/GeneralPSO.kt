@@ -44,4 +44,7 @@ class GeneralPSO(modelInfo: ModelInfo, val swarmCount: Int, val particleCount: I
 
         return velocity
     }
+
+    override val bestCost: Double
+        get() = swarms.map { it.globalBestCost }.minOrNull()!!
 }
