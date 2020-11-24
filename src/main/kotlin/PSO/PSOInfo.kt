@@ -12,5 +12,7 @@ data class PSOInfo(
         val accelGlobal: Double = 1.6,
         val accelLocal: Double = 1.6,
         val bounds: OpenEndDoubleRange = -1.0 until 1.0,
-        val neighborhoodSize: Int = 5
+        val neighborhoodSize: Int = 5,
+        val tLocal: Int = 100,
+        val tGlobal: Int = 100
 )
