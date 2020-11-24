@@ -3,13 +3,11 @@ package PSO
 import org.ejml.simple.SimpleMatrix
 import utility.*
 
-class GeneralPSO(modelInfo: ModelInfo, val swarmCount: Int, val particleCount: Int, val psoInfo: PSOInfo) : ParticleSwarmOptimization<VelocityParticle>(modelInfo) {
+class GeneralPSO(modelInfo: ModelInfo, val swarmCount: Int, particleCount: Int, val psoInfo: PSOInfo) : ParticleSwarmOptimization<VelocityParticle>(modelInfo) {
 
-    override var swarms: MutableList<Swarm<VelocityParticle>> = MutableList(swarmCount) { Swarm(initializeParticles()) }
-
-    override fun initializeParticles(): List<VelocityParticle> {
-        return List(particleCount) { VelocityParticle(modelInfo.lumpingMatrix.numCols(), modelInfo.lumpingMatrix.numRows(), psoInfo.lowerBound, psoInfo.upperBound) }
-    }
+    override var swarms = MutableList(swarmCount) { Swarm(
+            MutableList(particleCount) { VelocityParticle(modelInfo.lumpingMatrix.numCols(), modelInfo.lumpingMatrix.numRows(), psoInfo.bounds) }
+    ) }
 
     override fun updateParticle(swarm: Swarm<VelocityParticle>, particle: VelocityParticle) {
         val randNumsParticle = randMatrix(particle.position.numRows(), particle.position.numCols(), 0.0 until 1.0)
@@ -35,14 +33,16 @@ class GeneralPSO(modelInfo: ModelInfo, val swarmCount: Int, val particleCount: I
     }
 
     private fun checkVelocityBound(velocity: SimpleMatrix, psoInfo: PSOInfo): SimpleMatrix {
-        val vMax = (psoInfo.upperBound - psoInfo.lowerBound) / psoInfo.vMaxN
+        val vMax = psoInfo.bounds.size / psoInfo.vMaxN
 
-        for (i in 0 until velocity.numElements) {
-            if (velocity[i] > vMax) velocity[i] = vMax
-            if (velocity[i] < -vMax) velocity[i] = -vMax
+        val rVelocity = SimpleMatrix(velocity)
+
+        for (i in 0 until rVelocity.numElements) {
+            if (rVelocity[i] > vMax) rVelocity[i] = vMax
+            if (rVelocity[i] < -vMax) rVelocity[i] = -vMax
         }
 
-        return velocity
+        return rVelocity
     }
 
     override val bestCost: Double

@@ -2,12 +2,8 @@ package utility
 
 import org.ejml.simple.SimpleMatrix
 
-interface ModelCreator {
-    fun random(size: Int, reduction: Int): ModelInfo
-}
-
-class ToyModelCreator : ModelCreator {
-    override fun random(size: Int, reduction: Int): ModelInfo {
+class ToyModelCreator  {
+    fun random(size: Int, reduction: Int): ModelInfo {
         val toyF = { x: SimpleMatrix ->
             val y = SimpleMatrix(x.numRows(), x.numCols())
             y[0, 0] = x[0, 0] * x[2, 0] + x[2, 0]
@@ -20,7 +16,7 @@ class ToyModelCreator : ModelCreator {
     }
 }
 
-class SIRModelCreator : ModelCreator {
+class SIRModelCreator  {
 
     fun fromValues(m: SimpleMatrix, recoveryRates: SimpleMatrix, contactRates: SimpleMatrix): ModelInfo {
         if (recoveryRates.numCols() != 1 || recoveryRates.numRows() != contactRates.numCols() || contactRates.numCols() != contactRates.numRows())
@@ -43,7 +39,7 @@ class SIRModelCreator : ModelCreator {
         return ModelInfo(m, f)
     }
 
-    override fun random(size: Int, reduction: Int): ModelInfo {
+    fun random(size: Int, reduction: Int): ModelInfo {
         val fc = 3 * size
         return fromValues(randMatrix(fc - reduction, fc, -1.0 until 1.0), randMatrix(size, 1, 0.0 until 1.0), randMatrix(size, size, 0.0 until 1.0))
     }

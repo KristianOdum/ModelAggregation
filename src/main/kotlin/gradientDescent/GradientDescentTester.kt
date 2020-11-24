@@ -2,66 +2,124 @@ package gradientDescent
 
 import utility.*
 import java.awt.Color
+import java.io.File
 import kotlin.math.log
+import kotlin.math.pow
 
 class GradientDescentTester {
     fun run() {
         val sirCount = 3
-        val mi = ToyModelCreator().random(sirCount, 1)
-        val epochs = 1000
-        val learningRate = 0.000000000000001
+        var mi = SIRModelCreator().random(sirCount, 1)
+        val iterations = 1
+        val epochs = 100000
+        val learningRate = 3E-16
+        val learningRateForDynamic = learningRate
+        val averageCount = 2000
 
-        val constant = Pair(SimpleGD(mi, learningRate), "Constant")
-        val dynamic = Pair(DynamicGD(mi, learningRate), "Dynamic")
-        val extendedDynamic = Pair(ExtendedDynamicGD(mi, learningRate), "Extended Dynamic")
-        val rms = Pair(RMSPropGD(mi, learningRate), "RMSProp")
-        val adam = Pair(ADAMGD(mi, learningRate), "ADAM")
+        val constant = Pair(SimpleGD(mi, learningRate), "Const")
+        val dynamic = Pair(DynamicGD(mi, learningRateForDynamic), "Dyna")
+        val extendedDynamic = Pair(ExtendedDynamicGD(mi, learningRateForDynamic), "ExtDyna")
+        val rms = Pair(RMSPropGD(mi, learningRate), "RMS")
+        val adam = Pair(BiasCorrectedADAMGD(mi, learningRate), "ADAM")
+        val lineSearch = Pair(GoldenSectionGD(mi), "Line Search")
         val momentum = Pair(MomentumGD(mi, learningRate, epochs), "Momentum")
+        val plotter = Plotter()
+        plotter.plot.yAxis("Log_10(cost)", Plot.axisOpts().range(-20.0, 12.0))
+        val mapleExporter = MapleExporter()
+        val constantData = Pair(plotter.addSeries(constant.second, Color.BLUE), "Blue")
+        val dynamicData = Pair(plotter.addSeries(dynamic.second, Color.RED), "Red")
+        val extendedDynamicData = Pair(plotter.addSeries(extendedDynamic.second, Color.GRAY), "Gray")
+        val rmsData = Pair(plotter.addSeries(rms.second, Color.GREEN), "Green")
+        val adamData = Pair(plotter.addSeries(adam.second, Color.CYAN), "Cyan")
+        val momentumData = Pair(plotter.addSeries(momentum.second, Color.BLACK), "Black")
+        val lineSearchData = Pair(plotter.addSeries(lineSearch.second, Color.MAGENTA), "Magenta")
+
 
         // out-commenting decides what methods to test
         val runThese = listOf(
-                //constant,
-                //dynamic,
-                extendedDynamic,
-                //rms,
-                //adam,
-                //momentum
+                Pair(constant, constantData),
+                //Pair(lineSearch, lineSearchData),
+                //Pair(dynamic, dynamicData),
+                //Pair(rms, rmsData),
+                //Pair(adam, adamData),
+                //Pair(momentum, momentumData),
         )
 
-        val plotter = Plotter()
-        plotter.plot.yAxis("Log_10(cost)", Plot.axisOpts().range(-20.0, 12.0))
-        val constantData = plotter.addSeries(constant.second, Color.BLUE)
-        val dynamicData = plotter.addSeries(dynamic.second, Color.RED)
-        val extendedDynamicData = plotter.addSeries(extendedDynamic.second, Color.BLUE)
-        val rmsData = plotter.addSeries(rms.second, Color.GREEN)
-        val adamData = plotter.addSeries(adam.second, Color.MAGENTA)
-        val momentumData = plotter.addSeries(momentum.second, Color.BLACK)
-        val dataSeries = arrayOf(
-                //constantData,
-                dynamicData,
-                extendedDynamicData,
-                //rmsData,
-                //adamData,
-                //momentumData
-        )
+        runThese.forEach { mapleExporter.addSeries(it.first.second) }
 
-        for (method in runThese.withIndex())
-            for (i in 0..epochs) {
-                method.value.first.iterate()
-                val c = method.value.first.cost
+        val plotTitle = plotTitle(runThese)
+        plotter.plot.opts().title("$plotTitle | sir($sirCount) | lr: $learningRate")
 
-                dataSeries[method.index].xy(i, log(c, 10.0))
-                print("\r${method.value.second} -> $i : $c")
-                if (c < 1.0E-15)
-                    break
+
+
+        println("RUN: $plotTitle")
+        for (j in 1..iterations) {
+            var plateauCounter = 0
+            var lastBest = Double.MAX_VALUE
+
+            for (method in runThese.withIndex()) {
+                val mapleSeries = mapleExporter.series[method.value.first.second]!!
+                val plotterSeries = method.value.second.first
+                var best = Double.MAX_VALUE
+
+                val averages = Array(averageCount) { method.value.first.first.cost }
+
+                for (i in 0..epochs) {
+                    method.value.first.first.iterate()
+                    val c = method.value.first.first.cost
+                    averages[i % averageCount] = c
+                    val average = averages.average()
+
+                    if (c < best)
+                        best = c
+
+                    if(best == lastBest) {
+                        plateauCounter++
+                        if (plateauCounter >= 100) {
+                            //method.value.first.first.learningRate *= 0.1
+                            plateauCounter = 0
+                            println("Plateau hit. lr -> ${method.value.first.first.learningRate}")
+                        }
+                    }
+                    if(best < lastBest) {
+                        lastBest = best
+                        plateauCounter = 0
+                    }
+
+                    mapleSeries.xy(i, average)
+                    plotterSeries.xy(i, log(average, 10.0))
+                    print("\r${method.value.first.second} -> ${((i.toDouble() / (epochs.toDouble())) * 100.0).toInt()}% : $average")
+
+                    if (c < 1.0E-19 && plateauCounter >= 90)
+                        break
+                }
+                plotter.save()
             }
-        plotter.plot.opts().title("Normal (RED) and extended (BLUE) | sir($sirCount)")
-        plotter.save()
-
-        println("\n" + extendedDynamic.first.lumpingMatrix)
-        val ccalc = CostCalculator(mi.function)
-        ccalc.tolerance = 1.0E-4
-        ccalc.clusterSize = 100
-        println(ccalc.cost(extendedDynamic.first.lumpingMatrix))
+        }
+        mapleExporter.export()
     }
+}
+
+fun plotTitle(runThese: List<Pair<Pair<GradientDescent, String>, Pair<Plot.Data, String>>>) : String {
+    var res = ""
+
+    for (i in runThese) {
+        val methodAndColor = "${i.first.second}(${i.second.second})"
+
+        res += when {
+            i == runThese.first() -> {
+                methodAndColor
+            }
+            i == runThese.last() -> {
+                " and $methodAndColor"
+            }
+            i != runThese.first() -> {
+                ", $methodAndColor"
+            }
+            else -> ""
+        }
+
+    }
+
+    return res
 }

@@ -18,7 +18,7 @@ fun plotAlpha(m: SimpleMatrix, g: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatri
         val jobs = (0 until plotCount).map {
             GlobalScope.launch {
                 val d = beta * it.toDouble() / plotCount
-                val c = costCalculator.cost((m + g.scale(-d)).MGSON())
+                val c = costCalculator.cost((m + g.scale(-d)).rowNorm())
 
                 dataPointMutex.lock()
                 dataPoints.add(Pair(d, c))
@@ -31,6 +31,6 @@ fun plotAlpha(m: SimpleMatrix, g: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatri
     val plotter = Plotter()
     val d = plotter.addSeries("Cost")
     dataPoints.forEach { d.xy(it.first, it.second) }
-    plotter.addSeries("Alpha", Color.RED, Plot.Marker.DIAMOND).xy(alpha, costCalculator.cost((m + g.scale(-alpha)).MGSON()))
+    plotter.addSeries("Alpha", Color.RED, Plot.Marker.DIAMOND).xy(alpha, costCalculator.cost((m + g.scale(-alpha)).rowNorm()))
     plotter.save()
 }
