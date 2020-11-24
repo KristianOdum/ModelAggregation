@@ -49,7 +49,6 @@ class T10ModelCreator  {
     }
 }
 
-
 class T11ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {
         return ModelInfo(
@@ -146,8 +145,6 @@ class T11ModelCreator  {
         }
     }
 }
-
-
 
 class T12ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {
@@ -250,7 +247,6 @@ class T12ModelCreator  {
         }
     }
 }
-
 
 class T13ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {

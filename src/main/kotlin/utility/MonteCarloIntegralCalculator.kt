@@ -9,9 +9,6 @@ abstract class MonteCarloIntegralCalculator {
     var clusterSize: Int = 50
     var xRange = 1.0 until 100.0
 
-    var plotter = MapleExporter()
-    var plotdata = plotter.addSeries("Integration")
-
     protected fun integral(action: () -> Double): Double {
         val integral = Average()
         val integral2 = Average()
