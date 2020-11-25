@@ -53,13 +53,11 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
                 }
 
                 print("\r${completed.toDouble() / iterations}")
-
                 dataMutex.unlock()
             } }
 
             jobs.joinAll()
         }
-
         data.appendText(dataBuffer)
     }
 

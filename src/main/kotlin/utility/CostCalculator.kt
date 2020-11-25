@@ -10,7 +10,6 @@ class CostCalculator(modelFunction: (SimpleMatrix) -> SimpleMatrix) : ModelInteg
 
         return integral {
             val x = randMatrix(m.numCols(), 1, xRange)
-
             specificCost(m, mbarm, x).pow(2.0)
         }
     }

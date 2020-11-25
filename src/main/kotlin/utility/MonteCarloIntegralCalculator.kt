@@ -2,6 +2,7 @@ package utility
 
 import Average
 import org.ejml.simple.SimpleMatrix
+import kotlin.math.max
 import kotlin.math.pow
 
 abstract class MonteCarloIntegralCalculator {
@@ -15,6 +16,7 @@ abstract class MonteCarloIntegralCalculator {
         var i = 0L
         var sigma2 = Double.MAX_VALUE
         val tolerance2 = tolerance.pow(2)
+        var largeA = 0.0
 
         while (i < 1000 || sigma2 > tolerance2 * integral.value.pow(2)) {
             val a = action()
