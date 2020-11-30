@@ -11,7 +11,7 @@ import kotlin.time.measureTime
 class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterations: Int, val factory: () -> CostFunctionOptimizer)  {
 
     companion object {
-        private const val MAX_PLATEAU = 200
+        private const val MAX_PLATEAU = 10
     }
 
     fun run() {
@@ -39,7 +39,7 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
                         }
                         i++
 
-                        println("${i.toDouble() /  maxEpochs}")
+                        println("${(i.toDouble() /  maxEpochs)}\t${cfo.bestCost}")
                     }
                 }
 

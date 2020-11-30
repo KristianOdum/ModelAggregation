@@ -1,3 +1,6 @@
+import PSO.GeneralPSO
+import PSO.PSOInfo
+import gradientDescent.DerivativeCalculator
 import gradientDescent.GoldenSectionGD
 import gradientDescent.GradientDescent
 import gradientDescent.MomentumGD
@@ -14,21 +17,28 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 
 fun main() {
-    val cfot = CostFunctionOptimizerTester(300, 10) {
-        val mi = T11ModelCreator().createModel(1)
+
+    val mia = T3ModelCreator().createModel(1)
+
+    val cfot = CostFunctionOptimizerTester(200, 1) {
+        val mi = T3ModelCreator().createModel(1)
         GoldenSectionGD(mi)
     }
 
     cfot.run()
 }
 
+fun Double.strWidth(width: Int) = this.toString().take(max(3, width - 3)) + this.toString().takeLast(3)
+
 class Average {
     var i = 0L
     var value = 0.0
     fun add(value: Double) {
-        this.value = this.value * (i.toDouble()/(i+1)) + value * (1.0/(i+1))
+        this.value = tempAdd(value)
         i++
     }
+
+    fun tempAdd(value: Double) = this.value * (i.toDouble()/(i+1)) + value * (1.0/(i+1))
 }
 
 const val incrementCount = 50

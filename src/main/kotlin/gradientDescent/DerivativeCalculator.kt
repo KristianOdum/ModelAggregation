@@ -2,6 +2,8 @@ package gradientDescent
 
 import org.ejml.simple.SimpleMatrix
 import utility.*
+import kotlin.math.abs
+import kotlin.math.exp
 import kotlin.math.pow
 
 class DerivativeCalculator(modelFunction: (SimpleMatrix) -> SimpleMatrix) : ModelIntegralCalculator(modelFunction) {
@@ -13,18 +15,22 @@ class DerivativeCalculator(modelFunction: (SimpleMatrix) -> SimpleMatrix) : Mode
         val h1 = (m[e] + h) - m[e]
         val h2 = (m[e] - h) - m[e]
 
-        val mp = m.withSet(e, m[e] + h1).rowNorm()
+        val mp = m.withSet(e, m[e] + h1)
         val mpbarmp = mp.rightInverse().mult(mp)
 
-        val mn = m.withSet(e, m[e] + h2).rowNorm()
+        val mn = m.withSet(e, m[e] + h2)
         val mnbarmn = mn.rightInverse().mult(mn)
+
 
         return integral {
             val x = randMatrix(m.numCols(), 1, xRange)
-            (specificCost(mp, mpbarmp, x).pow(2.0) - specificCost(mn, mnbarmn, x).pow(2.0)) / (h1 - h2)
+            val spc = (specificCost(mp, mpbarmp, x).pow(2.0) - specificCost(mn, mnbarmn, x).pow(2.0)) / (h1 - h2)
+
+            sigmoidoid(spc)
         }
     }
 
+    private fun sigmoidoid(x: Double) = 2.0 /  (1 + exp(-x)) - 1.0
 
     // Calculates d/dalpha C(m + d*alpha)
     fun oneDimensionalDerivative(m: SimpleMatrix, d: SimpleMatrix, alpha: Double): Double {
