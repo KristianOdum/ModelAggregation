@@ -20,7 +20,7 @@ fun main() {
 
     val mia = T3ModelCreator().createModel(1)
 
-    val cfot = CostFunctionOptimizerTester(200, 1) {
+    val cfot = CostFunctionOptimizerTester(200, 1, 10) {
         val mi = T3ModelCreator().createModel(1)
         GoldenSectionGD(mi)
     }

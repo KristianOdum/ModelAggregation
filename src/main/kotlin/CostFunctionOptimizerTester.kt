@@ -8,12 +8,7 @@ import java.util.*
 import kotlin.system.measureTimeMillis
 import kotlin.time.measureTime
 
-class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterations: Int, val factory: () -> CostFunctionOptimizer)  {
-
-    companion object {
-        private const val MAX_PLATEAU = 10
-    }
-
+class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterations: Int, val maxPlateau : Int, val factory: () -> CostFunctionOptimizer)  {
     fun run() {
         val data = File("CostFunctionOptimizerTesterOutput.txt")
         val dataMutex = Mutex()
@@ -27,26 +22,32 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
                 var lastBestCost = Double.MAX_VALUE
                 val cfo = factory()
                 var i = 0
-                val time = measureTimeMillis {
-                    while (plateauCounter < MAX_PLATEAU && lastBestCost >= 1.0E-8 && i < maxEpochs) {
-                        cfo.iterate()
+                val startTime = System.currentTimeMillis()
+                var bestTime = startTime
+                var bestIteration = 0
+                var startCost = 0.0
 
-                        if (cfo.bestCost >= lastBestCost)
-                            plateauCounter++
-                        else {
-                            plateauCounter = 0
-                            lastBestCost = cfo.bestCost
-                        }
-                        i++
+                while (plateauCounter < maxPlateau && lastBestCost >= 1.0E-8 && i < maxEpochs) {
+                    cfo.iterate()
+                    if(i == 0) startCost = cfo.bestCost
 
-                        println("${(i.toDouble() /  maxEpochs)}\t${cfo.bestCost}")
+                    if (cfo.bestCost >= lastBestCost)
+                        plateauCounter++
+                    else {
+                        plateauCounter = 0
+                        lastBestCost = cfo.bestCost
+                        bestTime = System.currentTimeMillis() - startTime
+                        bestIteration = i
                     }
+                    i++
+
+                    println("${(i.toDouble() /  maxEpochs)}\t${cfo.bestCost}")
                 }
 
                 dataMutex.lock()
                 completed++
 
-                dataBuffer += "$i ${cfo.bestCost} $time\n"
+                dataBuffer += "$bestIteration ${cfo.bestCost} $bestTime $startCost\n"
                 if (dataBuffer.length > 100) {
                     data.appendText(dataBuffer)
                     dataBuffer = ""

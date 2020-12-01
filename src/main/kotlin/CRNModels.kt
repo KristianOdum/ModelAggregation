@@ -28,6 +28,7 @@ class T3ModelCreator  {
     }
 }
 
+//BIOMD0000000013
 class T10ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {
         return ModelInfo(
@@ -71,6 +72,7 @@ class T10ModelCreator  {
     }
 }
 
+//BIOMD0000000090
 class T11ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {
         return ModelInfo(
@@ -168,6 +170,7 @@ class T11ModelCreator  {
     }
 }
 
+//BIOMD0000000107
 class T12ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {
         return ModelInfo(
@@ -270,6 +273,7 @@ class T12ModelCreator  {
     }
 }
 
+//BIOMD0000000143
 class T13ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {
         return ModelInfo(
@@ -354,6 +358,7 @@ class T13ModelCreator  {
     }
 }
 
+//BIOMD0000000005
 class T14ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {
         return ModelInfo(
@@ -370,6 +375,298 @@ class T14ModelCreator  {
             dy[7- 1]=1*1*y[4- 1]+(-1*0.6)*y[7- 1]
             dy[8- 1]=0.0
             dy[9- 1]=0.0
+
+            dy
+        }
+    }
+}
+
+//BIOMD0000000077
+class T4ModelCreator  {
+    fun createModel(reduction: Int) : ModelInfo {
+        return ModelInfo(
+            randMatrix(9 - reduction, 9, -1.0 until 1.0).MGSON())
+        { y: SimpleMatrix ->
+            val dy = SimpleMatrix(y)
+
+            val alpha = 2.0
+
+            val beta = 4.0
+
+
+            dy[0]=((-1.0)*(1.0*2.5))*y[0]*y[2]+((-1.0)*(1.0*(-5.0)))*y[1]
+            dy[1]=1.0*2.5*y[0]*y[2]+(1.0*(-5.0))*y[1]+((-2.0)*(1.0*2500.0))*y[1]*y[1]+((-2.0)*(1.0*(-5.0)))*y[3]
+            dy[2]=((-1.0)*(1.0*2.5))*y[0]*y[2]+((-1.0)*(1.0*(-5.0)))*y[1]
+            dy[3]=1.0*2500.0*y[1]*y[1]+(1.0*(-5.0))*y[3]+((-1.0)*(1.0*4000.0))*y[3]*y[5]+((-1.0)*(1.0*(-200.0)))*y[4]
+            dy[4]=1.0*4000.0*y[3]*y[5]+(1.0*(-200.0))*y[4]
+            dy[5]=((-1.0)*(1.0*4000.0))*y[3]*y[5]+((-1.0)*(1.0*(-200.0)))*y[4]
+            dy[6]=1.0*2.0E7*y[4]+1.0*10.0*y[6]
+            dy[7]=0.0
+            dy[8]=((-1.0)*(1.0*10.0))*y[6]
+
+            dy
+        }
+    }
+}
+
+//BIOMD0000000104
+class T5ModelCreator  {
+    fun createModel(reduction: Int) : ModelInfo {
+        return ModelInfo(
+            randMatrix(6 - reduction, 6, -1.0 until 1.0).MGSON())
+        { y: SimpleMatrix ->
+            val dy = SimpleMatrix(y)
+
+
+
+            dy[0]=((-1.0)*(1.0*1.0))*y[0]*y[2]
+            dy[1]=1.0*1.0*y[0]*y[2]+((-1.0)*((1.0*1.0)*(-1.0)))*y[1]*y[2]+((-1.0)*(1.0*1.0))*y[1]*y[5]
+            dy[2]=0.0
+            dy[3]=0.0
+            dy[4]=((1.0*1.0)*(-1.0))*y[1]*y[2]+1.0*1.0*y[1]*y[5]
+            dy[5]=0.0
+
+            dy
+        }
+    }
+}
+
+//BIOMD0000000108
+class T6ModelCreator  {
+    fun createModel(reduction: Int) : ModelInfo {
+        return ModelInfo(
+            randMatrix(12 - reduction, 12, -1.0 until 1.0).MGSON())
+        { y: SimpleMatrix ->
+            val dy = SimpleMatrix(y)
+
+            val k1 = 6.6E-7
+
+            val k2 = 1.6E9
+
+            val k3 = 1.6E9
+
+            val k4 = 100000.0
+
+            val k5 = 20000.0
+
+            val k6 = 1.0
+
+            val k7 = 3.4E7
+
+            val k9 = 1000000.0
+
+            val k10 = 1000.0
+
+            val k11 = 2.5E8
+
+            val k12 = 0.38
+
+            val k13a = 0.0087
+
+            val k13b = 0.0087
+
+            val k17 = 30000.0
+
+            val k18 = 7.0
+
+            val k19 = 88000.0
+
+            val HO2star = 0.0
+
+            val Cu_I_ZnSOD = 0.0
+
+
+            dy[0]=((1.0*k2)+((-1.0)*((1.0*k3)*(-1.0))))*y[0]*y[1]+((-1.0)*(1.0*k5))*y[0]*y[2]+((-1.0)*(1.0*k4))*y[0]*y[3]+((-1.0)*(1.0*k3))*y[0]*y[7]+1.0*k1*y[10]+(k10*(1.0/100.0))*1.0*y[11]
+            dy[1]=(((1.0*k3)*(-1.0))+(1.0*k2))*y[0]*y[1]+1.0*k3*y[0]*y[7]+1.0*k13b*y[1]+((1.0*k13a)*(-1.0))*y[1]*y[10]+1.0*k13a*y[7]*y[10]
+            dy[2]=((1.0*k3)*(-1.0))*y[0]*y[1]+((-1.0)*(1.0*k5))*y[0]*y[2]+1.0*k3*y[0]*y[7]+((-1.0)*(1.0*k6))*y[1]*y[2]+((-1.0)*(1.0*k7))*y[2]*y[8]+(1.0*k10)*(1.0/100.0)*y[10]
+            dy[3]=((-1.0)*(1.0*k4))*y[0]*y[3]+((-1.0)*(1.0*k18))*y[3]+2.0*(1.0*k19)*y[3]*y[3]+1.0*k17*y[6]
+            dy[4]=2.0*(1.0*k5)*y[0]*y[2]+2.0*(1.0*k6)*y[1]*y[2]+(((-1.0)*(1.0*k11))+(1.0*k9))*y[4]
+            dy[5]=1.0*k4*y[0]*y[3]+1.0*k18*y[3]+1.0*k12*y[5]
+            dy[6]=1.0*k18*y[3]+1.0*k11*y[4]+((-1.0)*(1.0*k17))*y[6]+(1.0*k10)*(1.0/100.0)*y[10]
+            dy[7]=0.0
+            dy[8]=0.0
+            dy[9]=((-1.0)*(1.0*k2))*y[0]*y[1]+((-1.0)*(1.0*k13b))*y[1]+((-1.0)*(1.0*k19))*y[3]*y[3]+((-1.0)*(1.0*k9))*y[4]+((-1.0)*(1.0*k12))*y[5]+((-1.0)*((k10*(1.0/100.0))*1.0))*y[11]
+            dy[10]=0.0
+            dy[11]=0.0
+
+            dy
+        }
+    }
+}
+
+//BIOMD0000000125
+class T7ModelCreator  {
+    fun createModel(reduction: Int) : ModelInfo {
+        return ModelInfo(
+            randMatrix(6 - reduction, 6, -1.0 until 1.0).MGSON())
+        { y: SimpleMatrix ->
+            val dy = SimpleMatrix(y)
+
+            val a1 = 2.0
+
+            val a2 = 2.0
+
+            val b1 = 1.0
+
+            val b2 = 1.0
+
+            val d1 = 1.0
+
+            val d2x = 1.0
+
+            val d2y = 1.0
+
+
+            dy[0]=1.0*d1*y[0]+1.0*a1*y[3]+1.0*b1*y[4]
+            dy[1]=1.0*a2*y[0]+1.0*d2x*y[1]
+            dy[2]=1.0*b2*y[0]+1.0*d2y*y[2]
+            dy[3]=0.0
+            dy[4]=0.0
+            dy[5]=((-1.0)*(1.0*d1))*y[0]+((-1.0)*(1.0*d2x))*y[1]+((-1.0)*(1.0*d2y))*y[2]
+
+            dy
+        }
+    }
+}
+
+//BIOMD0000000188
+class T8ModelCreator  {
+    fun createModel(reduction: Int) : ModelInfo {
+        return ModelInfo(
+            randMatrix(21 - reduction, 21, -1.0 until 1.0).MGSON())
+        { y: SimpleMatrix ->
+            val dy = SimpleMatrix(y)
+
+            val IR = 0.0
+
+            val ksynMdm2 = 4.95E-4
+
+            val kdegMdm2 = 4.33E-4
+
+            val ksynp53 = 0.006
+
+            val kdegp53 = 8.25E-4
+
+            val kbinMdm2p53 = 0.001155
+
+            val krelMdm2p53 = 1.155E-5
+
+            val ksynMdm2mRNA = 1.0E-4
+
+            val kdegMdm2mRNA = 1.0E-4
+
+            val kactATM = 1.0E-4
+
+            val kdegATMMdm2 = 4.0E-4
+
+            val kinactATM = 5.0E-4
+
+            val kphosp53 = 5.0E-4
+
+            val kdephosp53 = 0.5
+
+            val kphosMdm2 = 2.0
+
+            val kdephosMdm2 = 0.5
+
+            val kdam = 0.08
+
+            val krepair = 2.0E-5
+
+            val kproteff = 1.0
+
+            val ksynp53mRNA = 0.001
+
+            val kdegp53mRNA = 1.0E-4
+
+
+            dy[0]=((-1.0)*(kdegMdm2*kproteff))*y[0]+((-1.0)*kbinMdm2p53)*y[0]*y[1]+((-1.0)*kphosMdm2)*y[0]*y[5]+(krelMdm2p53+(kdegp53*kproteff))*y[2]+ksynMdm2*y[3]+kdephosMdm2*y[8]
+            dy[1]=((-1.0)*kbinMdm2p53)*y[0]*y[1]+((-1.0)*kphosp53)*y[1]*y[5]+krelMdm2p53*y[2]+ksynp53*y[4]+kdephosp53*y[7]
+            dy[2]=kbinMdm2p53*y[0]*y[1]+(((-1.0)*(kdegp53*kproteff))+((-1.0)*krelMdm2p53))*y[2]
+            dy[3]=ksynMdm2mRNA*y[1]+((-1.0)*kdegMdm2mRNA)*y[3]+ksynMdm2mRNA*y[7]
+            dy[4]=((-1.0)*kdegp53mRNA)*y[4]+ksynp53mRNA*y[11]
+            dy[5]=((-1.0)*kinactATM)*y[5]+kactATM*y[6]*y[9]
+            dy[6]=kinactATM*y[5]+((-1.0)*kactATM)*y[6]*y[9]
+            dy[7]=kphosp53*y[1]*y[5]+((-1.0)*kdephosp53)*y[7]
+            dy[8]=kphosMdm2*y[0]*y[5]+(((-1.0)*kdephosMdm2)+((-1.0)*kdegATMMdm2))*y[8]
+            dy[9]=((-1.0)*krepair)*y[9]+kdam*IR*y[20]
+            dy[10]=0.0
+            dy[11]=0.0
+            dy[12]=kdegp53*kproteff*y[2]
+            dy[13]=ksynp53*y[4]
+            dy[14]=kdegMdm2*kproteff*y[0]+kdegATMMdm2*y[8]
+            dy[15]=ksynMdm2*y[3]
+            dy[16]=kdegMdm2mRNA*y[3]
+            dy[17]=ksynMdm2mRNA*y[1]+ksynMdm2mRNA*y[7]
+            dy[18]=0.0
+            dy[19]=0.0
+            dy[20]=0.0
+
+            dy
+        }
+    }
+}
+
+//BIOMD0000000189
+class T9ModelCreator  {
+    fun createModel(reduction: Int) : ModelInfo {
+        return ModelInfo(
+            randMatrix(19 - reduction, 19, -1.0 until 1.0).MGSON())
+        { y: SimpleMatrix ->
+            val dy = SimpleMatrix(y)
+
+            val IR = 0.0
+
+            val ksynMdm2 = 4.95E-4
+
+            val kdegMdm2 = 4.33E-4
+
+            val ksynp53 = 0.078
+
+            val kdegp53 = 8.25E-4
+
+            val kbinMdm2p53 = 0.001155
+
+            val krelMdm2p53 = 1.155E-5
+
+            val ksynMdm2mRNA = 1.0E-4
+
+            val kdegMdm2mRNA = 1.0E-4
+
+            val kbinARFMdm2 = 0.01
+
+            val kdegARFMdm2 = 0.001
+
+            val kdegARF = 1.0E-4
+
+            val kactARF = 3.3E-5
+
+            val kdam = 0.08
+
+            val krepair = 2.0E-5
+
+            val kproteff = 1.0
+
+
+            dy[0]=((-1.0)*(kdegMdm2*kproteff))*y[0]+((-1.0)*kbinMdm2p53)*y[0]*y[1]+((-1.0)*kbinARFMdm2)*y[0]*y[4]+(krelMdm2p53+(kdegp53*kproteff))*y[2]+ksynMdm2*y[3]
+            dy[1]=((-1.0)*kbinMdm2p53)*y[0]*y[1]+krelMdm2p53*y[2]+ksynp53*y[8]
+            dy[2]=kbinMdm2p53*y[0]*y[1]+(((-1.0)*(kdegp53*kproteff))+((-1.0)*krelMdm2p53))*y[2]
+            dy[3]=ksynMdm2mRNA*y[1]+((-1.0)*kdegMdm2mRNA)*y[3]
+            dy[4]=((-1.0)*kbinARFMdm2)*y[0]*y[4]+((-1.0)*(kdegARF*kproteff))*y[4]+kdegARFMdm2*kproteff*y[5]+kactARF*y[6]
+            dy[5]=kbinARFMdm2*y[0]*y[4]+((-1.0)*(kdegARFMdm2*kproteff))*y[5]
+            dy[6]=((-1.0)*krepair)*y[6]+kdam*IR*y[18]
+            dy[7]=0.0
+            dy[8]=0.0
+            dy[9]=kdegp53*kproteff*y[2]
+            dy[10]=ksynp53*y[8]
+            dy[11]=kdegMdm2*kproteff*y[0]+kdegARFMdm2*kproteff*y[5]
+            dy[12]=ksynMdm2*y[3]
+            dy[13]=kdegMdm2mRNA*y[3]
+            dy[14]=ksynMdm2mRNA*y[1]
+            dy[15]=kdam*IR*y[18]
+            dy[16]=0.0
+            dy[17]=0.0
+            dy[18]=0.0
 
             dy
         }
