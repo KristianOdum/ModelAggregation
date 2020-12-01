@@ -2,27 +2,28 @@ package gradientDescent
 
 import utility.*
 import java.awt.Color
-import java.io.File
 import kotlin.math.log
-import kotlin.math.pow
 
 class GradientDescentTester {
     fun run() {
         val sirCount = 3
         var mi = SIRModelCreator().random(sirCount, 1)
         val iterations = 1
-        val epochs = 100000
-        val learningRate = 3E-16
+        val epochs = 500
+        val learningRate = 0.003
         val learningRateForDynamic = learningRate
-        val averageCount = 2000
+        val averageCount = 10
 
         val constant = Pair(SimpleGD(mi, learningRate), "Const")
         val dynamic = Pair(DynamicGD(mi, learningRateForDynamic), "Dyna")
         val extendedDynamic = Pair(ExtendedDynamicGD(mi, learningRateForDynamic), "ExtDyna")
         val rms = Pair(RMSPropGD(mi, learningRate), "RMS")
-        val adam = Pair(BiasCorrectedADAMGD(mi, learningRate), "ADAM")
+        val mrms = Pair(MRMSPropGD(mi, learningRate), "mRMS")
+        val adam = Pair(BiasCorrectedADAMGD(mi, learningRate), "adam")
+        val madam = Pair(MAdamGD(mi, learningRate), "madam")
         val lineSearch = Pair(GoldenSectionGD(mi), "Line Search")
         val momentum = Pair(MomentumGD(mi, learningRate, epochs), "Momentum")
+        val mmomentum = Pair(MMomentumGD(mi, learningRate, epochs), "mMomentum")
         val plotter = Plotter()
         plotter.plot.yAxis("Log_10(cost)", Plot.axisOpts().range(-20.0, 12.0))
         val mapleExporter = MapleExporter()
@@ -30,19 +31,26 @@ class GradientDescentTester {
         val dynamicData = Pair(plotter.addSeries(dynamic.second, Color.RED), "Red")
         val extendedDynamicData = Pair(plotter.addSeries(extendedDynamic.second, Color.GRAY), "Gray")
         val rmsData = Pair(plotter.addSeries(rms.second, Color.GREEN), "Green")
+        val mrmsData = Pair(plotter.addSeries(mrms.second, Color.ORANGE), "Orange")
         val adamData = Pair(plotter.addSeries(adam.second, Color.CYAN), "Cyan")
+        val madamData = Pair(plotter.addSeries(madam.second, Color.CYAN), "Cyan")
         val momentumData = Pair(plotter.addSeries(momentum.second, Color.BLACK), "Black")
+        val mmomentumData = Pair(plotter.addSeries(mmomentum.second, Color.BLACK), "Black")
         val lineSearchData = Pair(plotter.addSeries(lineSearch.second, Color.MAGENTA), "Magenta")
-
 
         // out-commenting decides what methods to test
         val runThese = listOf(
-                Pair(constant, constantData),
+                //Pair(constant, constantData),
                 //Pair(lineSearch, lineSearchData),
                 //Pair(dynamic, dynamicData),
+                //Pair(extendedDynamic, extendedDynamicData),
                 //Pair(rms, rmsData),
+                //Pair(mrms, mrmsData),
                 //Pair(adam, adamData),
+                //Pair(madam, madamData),
                 //Pair(momentum, momentumData),
+                Pair(mmomentum, mmomentumData),
+
         )
 
         runThese.forEach { mapleExporter.addSeries(it.first.second) }
@@ -50,19 +58,18 @@ class GradientDescentTester {
         val plotTitle = plotTitle(runThese)
         plotter.plot.opts().title("$plotTitle | sir($sirCount) | lr: $learningRate")
 
-
-
         println("RUN: $plotTitle")
         for (j in 1..iterations) {
-            var plateauCounter = 0
-            var lastBest = Double.MAX_VALUE
-
             for (method in runThese.withIndex()) {
                 val mapleSeries = mapleExporter.series[method.value.first.second]!!
                 val plotterSeries = method.value.second.first
                 var best = Double.MAX_VALUE
+                var plateauCounter = 0
+                var lastBest = Double.MAX_VALUE
 
                 val averages = Array(averageCount) { method.value.first.first.cost }
+
+                val startTime = System.currentTimeMillis()
 
                 for (i in 0..epochs) {
                     method.value.first.first.iterate()
@@ -73,29 +80,29 @@ class GradientDescentTester {
                     if (c < best)
                         best = c
 
-                    if(best == lastBest) {
+                    if(best >= 0.95 * lastBest) {
                         plateauCounter++
-                        if (plateauCounter >= 100) {
-                            //method.value.first.first.learningRate *= 0.1
-                            plateauCounter = 0
-                            println("Plateau hit. lr -> ${method.value.first.first.learningRate}")
-                        }
+                        if (plateauCounter >= 50)
+                            break
                     }
                     if(best < lastBest) {
                         lastBest = best
                         plateauCounter = 0
                     }
 
-                    mapleSeries.xy(i, average)
-                    plotterSeries.xy(i, log(average, 10.0))
-                    print("\r${method.value.first.second} -> ${((i.toDouble() / (epochs.toDouble())) * 100.0).toInt()}% : $average")
+                    val elapsedSeconds = (System.currentTimeMillis() - startTime).toDouble() / 1000.0
 
-                    if (c < 1.0E-19 && plateauCounter >= 90)
+                    mapleSeries.xy(i, average)
+                    plotterSeries.xy(elapsedSeconds, log(average, 10.0))
+                    print("\r${method.value.first.second} -> ${((i.toDouble() / (epochs.toDouble())) * 100.0).toInt()}% : $c | pc = $plateauCounter")
+
+                    if (c < 1.0E-8)
                         break
                 }
-                plotter.save()
+                println()
             }
         }
+        plotter.save()
         mapleExporter.export()
     }
 }

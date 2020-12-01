@@ -7,27 +7,32 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
 import utility.Plotter
 import utility.SIRModelCreator
+import utility.ToyModelCreator
 import java.io.File
+import java.util.*
 import kotlin.math.log
 
 class ProbabilityDistributionTester {
     fun run() {
         val iterations = 500
-        val epochs = 3000
-        val minEpochs = 500
-        val learningRate = 3.0E-8
-        val sirCount = 3
+        val maxEpochs = 3000
+        val minEpochs = 100
+        val learningRate = 0.03
+        val sirCount = 7
 
         var bestCostData = ""
+
+        val startTime = System.currentTimeMillis()
 
         runBlocking {
             val mutex = Mutex()
             var t = 0
+            var goodLumpings = 0
 
             val jobs = (0..iterations).map {
                 GlobalScope.launch {
                     val mi = SIRModelCreator().random(sirCount, 1)
-                    val method = DynamicGD(mi, learningRate)
+                    val method = GoldenSectionGD(mi, learningRate)
                     var best = Double.MAX_VALUE
 
                     val plotter = Plotter()
@@ -37,7 +42,7 @@ class ProbabilityDistributionTester {
                     var lastBest = Double.MAX_VALUE
                     var plateauCounter = 0
 
-                    for (j in 0..epochs) {
+                    for (j in 0..maxEpochs) {
                         method.iterate()
                         val c = method.cost
 
@@ -47,7 +52,9 @@ class ProbabilityDistributionTester {
 
                         if(best == lastBest && j >= minEpochs) {
                             plateauCounter++
-                            if (plateauCounter >= 250)
+                            if (plateauCounter >= 100)
+                                break
+                            if(c < 1.0E-15 && plateauCounter >= 5)
                                 break
                         }
                         if(best < lastBest) {
@@ -57,12 +64,19 @@ class ProbabilityDistributionTester {
                     }
 
                     mutex.lock()
-                    print("\r${((t++.toDouble() / (iterations) * 100.0).toInt())}% -> best: $best")
-                    if(best > 1.0E7)
-                        println("\n$best")
+                    if (best < 10E-8)
+                        goodLumpings++
+
+                    val timePerEpoch = (((System.currentTimeMillis() - startTime).toDouble()) / t.toDouble()).toLong()
+                    val timeLeft = (iterations-t) * timePerEpoch
+                    val secondsLeft = (timeLeft / 1000) % 60
+                    val minsLeft = (timeLeft / 60000) % 60
+                    val hoursLeft = timeLeft / 3600000
+
+                    print("\r${((t++.toDouble() / iterations * 100.0).toInt())}% -> best: $best | Ratio: ${goodLumpings.toDouble() / t.toDouble()} | Time left: [$hoursLeft:$minsLeft:$secondsLeft]")
                     bestCostData += "$best "
                     mutex.unlock()
-                    plotter.save("Constant")
+                    plotter.save("Line Search Sir7")
                 }
             }
             jobs.joinAll()

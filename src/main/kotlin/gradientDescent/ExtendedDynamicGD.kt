@@ -2,39 +2,38 @@ package gradientDescent
 
 import org.ejml.simple.SimpleMatrix
 import utility.ModelInfo
+import utility.allElements
 import utility.create
-import kotlin.math.min
 
-class ExtendedDynamicGD(modelInfo: ModelInfo, learningRate: Double = 0.003) : DynamicGD(modelInfo, learningRate) {
-    private var learningRates = lumpingMatrix.create { _ -> learningRate }
-    private var previousGradient = lumpingMatrix.create { _ -> 0.0 }
-
-    // Extended
+class ExtendedDynamicGD(modelInfo: ModelInfo, private val learningRate: Double = 0.003) : AbstractDynamicGD(modelInfo, learningRate) {
     private var t = 0
-    private var maxLearningRate = 0.003
+    private val maxLearningRate: Double
+        get() { return learningRate / t.toDouble() }
 
-    init {
-        costCalculator.tolerance = 1.0E-2
-    }
+    private val momentum = lumpingMatrix.create { _ -> 0.0 }
+    private val decayRate = 0.90
 
-    override fun step(): SimpleMatrix {
+    override fun delta(): SimpleMatrix {
         val delta = lumpingMatrix.create { _ -> 0.0 }
-        for (i in 0 until lumpingMatrix.numElements) {
-            if (gradient[i] * previousGradient[i] < 0) {
-                learningRates[i] *= 0.7
-            } else {
-                learningRates[i] *= 1.2
-                learningRates[i] = min(learningRates[i], maxLearningRate)
-            }
 
+        if(t % 100 == 0) {
+            val smallest = learningRates.allElements().minOrNull()!!
+
+            for (i in 0 until lumpingMatrix.numElements) {
+                learningRates[i] = smallest
+            }
+        }
+
+        for (i in 0 until lumpingMatrix.numElements) {
             if (gradient[i] > 0)
                 delta[i] = -learningRates[i]
             else
                 delta[i] = learningRates[i]
+
+            momentum[i] = decayRate * momentum[i] + (1 - decayRate) * delta[i]
         }
 
-        previousGradient = gradient
         t++
-        return delta
+        return momentum
     }
 }
