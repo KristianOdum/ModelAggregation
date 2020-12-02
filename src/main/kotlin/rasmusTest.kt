@@ -18,10 +18,12 @@ fun main() {
 
     val mia = T3ModelCreator().createModel(1)
 
+
+
     val cfot = CostFunctionOptimizerTester(200, 100, 10) {
         val mi = T10ModelCreator().createModel(1)
-        val derCalculator = DerivativeCalculator(MonteCarloMeanCalculator(mi.lumpingMatrix.numCols()), mi.function, SigmoidoidTransformer(1000.0))
-        val costCalculator = CostCalculator(MonteCarloMeanCalculator(mi.lumpingMatrix.numCols()), mi.function, SigmoidoidTransformer(1000.0))
+        val derCalculator = DerivativeCalculator(MonteCarloMeanCalculator(mi.lumpingMatrix.numCols(), 0.5), mi.function, SigmoidoidTransformer(1E30))
+        val costCalculator = CostCalculator(MonteCarloMeanCalculator(mi.lumpingMatrix.numCols(),0.05), mi.function, SigmoidoidTransformer(1000.0))
         GoldenSectionGD(mi, derCalculator, costCalculator)
     }
 

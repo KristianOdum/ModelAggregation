@@ -12,7 +12,7 @@ import java.awt.Color
 fun plotAlpha(m: SimpleMatrix, g: SimpleMatrix, f: (SimpleMatrix) -> SimpleMatrix, beta: Double, alpha: Double) {
     val dataPoints = mutableListOf<Pair<Double, Double>>()
     val plotCount = 100
-    val costCalculator = CostCalculator(MonteCarloMeanCalculator(m.numCols()), f)
+    val costCalculator = CostCalculator(MonteCarloMeanCalculator(m.numCols(), 0.05), f)
     runBlocking {
         val dataPointMutex = Mutex()
         val jobs = (0 until plotCount).map {

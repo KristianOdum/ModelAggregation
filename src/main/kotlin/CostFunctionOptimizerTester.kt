@@ -40,8 +40,7 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
                         bestIteration = i
                     }
                     i++
-
-                    print("\r${(i.toDouble() /  maxEpochs)}\t${cfo.bestCost}")
+                    //print("\r${(i.toDouble() /  maxEpochs)}\t${cfo.bestCost}")
                 }
 
                 dataMutex.lock()
