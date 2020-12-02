@@ -1,5 +1,6 @@
-package gradientDescent
 /*
+package gradientDescent
+
 import utility.*
 import java.awt.Color
 import kotlin.math.log
@@ -16,7 +17,6 @@ class GradientDescentTester {
 
         val constant = Pair(SimpleGD(mi, learningRate), "Const")
         val dynamic = Pair(DynamicGD(mi, learningRateForDynamic), "Dyna")
-        val extendedDynamic = Pair(ExtendedDynamicGD(mi, learningRateForDynamic), "ExtDyna")
         val rms = Pair(RMSPropGD(mi, learningRate), "RMS")
         val mrms = Pair(MRMSPropGD(mi, learningRate), "mRMS")
         val adam = Pair(BiasCorrectedADAMGD(mi, learningRate), "adam")
@@ -130,5 +130,4 @@ fun plotTitle(runThese: List<Pair<Pair<GradientDescent, String>, Pair<Plot.Data,
 
     return res
 }
-
- */
+*/

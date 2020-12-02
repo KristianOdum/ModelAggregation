@@ -8,9 +8,9 @@ import java.util.*
 import kotlin.system.measureTimeMillis
 import kotlin.time.measureTime
 
-class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterations: Int, val maxPlateau : Int, val factory: () -> CostFunctionOptimizer)  {
+class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterations: Int, val maxPlateau : Int, private val filePath: String = "CostFunctionOptimizerTesterOutput.txt", val factory: () -> CostFunctionOptimizer)  {
     fun run() {
-        val data = File("CostFunctionOptimizerTesterOutput.txt")
+        val data = File(filePath)
         val dataMutex = Mutex()
         var dataBuffer = ""
         data.createNewFile()
@@ -41,7 +41,7 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
                     }
                     i++
 
-                    //println("${(i.toDouble() /  maxEpochs)}\t${cfo.bestCost}")
+                    print("\r${(i.toDouble() /  maxEpochs)}\t${cfo.bestCost}")
                 }
 
                 dataMutex.lock()
@@ -61,5 +61,4 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
         }
         data.appendText(dataBuffer)
     }
-
 }
