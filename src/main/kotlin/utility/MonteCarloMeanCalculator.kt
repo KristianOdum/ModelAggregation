@@ -4,7 +4,7 @@ import Average
 import org.ejml.simple.SimpleMatrix
 import kotlin.math.*
 
-class MonteCarloMeanCalculator(dimensionCount: Int) : MeanCalculator(dimensionCount) {
+class MonteCarloMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculator(dimensionCount, tolerance) {
 
     override fun calculate(evalpoint: (x: SimpleMatrix) -> Double): Double {
         val integral = Average()

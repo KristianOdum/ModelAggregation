@@ -2,7 +2,7 @@ package utility
 
 import org.ejml.simple.SimpleMatrix
 
-open class CostCalculator(private val meanCalculator: MonteCarloMeanCalculator, modelFunction: (SimpleMatrix) -> SimpleMatrix, private val transformer: InvertibleTransformation = IdentityTransformer()) : ModelSpecificCost(modelFunction), Cloneable {
+open class CostCalculator(private val meanCalculator: MeanCalculator, modelFunction: (SimpleMatrix) -> SimpleMatrix, private val transformer: InvertibleTransformation = IdentityTransformer()) : ModelSpecificCost(modelFunction), Cloneable {
     fun cost(m: SimpleMatrix): Double {
         val mbarm = m.rightInverse().mult(m)
 

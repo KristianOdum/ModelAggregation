@@ -4,7 +4,7 @@ import org.ejml.simple.SimpleMatrix
 import utility.*
 import kotlin.math.*
 
-open class DerivativeCalculator(private val meanCalculator: MonteCarloMeanCalculator, modelFunction: (SimpleMatrix) -> SimpleMatrix, private val transformer: InvertibleTransformation = IdentityTransformer()) : ModelSpecificCost(modelFunction) {
+open class DerivativeCalculator(private val meanCalculator: MeanCalculator, modelFunction: (SimpleMatrix) -> SimpleMatrix, private val transformer: InvertibleTransformation = IdentityTransformer()) : ModelSpecificCost(modelFunction) {
     companion object {
         private const val h = 1.0E-8
     }
