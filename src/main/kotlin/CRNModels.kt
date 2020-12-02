@@ -672,3 +672,19 @@ class T9ModelCreator  {
         }
     }
 }
+
+class TCMQModelCreator  {
+    fun createModel(reduction: Int) : ModelInfo {
+        return ModelInfo(
+            randMatrix(3 - reduction, 3, -1.0 until 1.0).MGSON())
+        { y: SimpleMatrix ->
+            val dy = SimpleMatrix(y)
+
+            dy[0] = y[0] * y[1] + y[2]
+            dy[1] = 0.0
+            dy[2] = 0.0
+
+            dy
+        }
+    }
+}

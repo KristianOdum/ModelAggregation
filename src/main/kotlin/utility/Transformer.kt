@@ -16,7 +16,7 @@ class IdentityTransformer : InvertibleTransformation {
     override fun inverse(v: Double): Double = v
 }
 
-class SigmoidoidTransformer(val sigmoidScaling: Double) : InvertibleTransformation {
+open class SigmoidoidTransformer(val sigmoidScaling: Double) : InvertibleTransformation {
     override fun transform(v: Double) = 2.0 /  (1 + exp(-v / sigmoidScaling)) - 1.0
     override fun inverse(v: Double) = -log(2.0 / (v + 1.0) - 1.0, E) * sigmoidScaling
 
@@ -26,7 +26,7 @@ class SigmoidoidTransformer(val sigmoidScaling: Double) : InvertibleTransformati
         }
 
         fun CreateDerivativeFromPrediction(modelInfo: ModelInfo, meanCalculator: MeanCalculator) : DerivativeCalculator {
-            return DerivativeCalculator(meanCalculator, modelInfo.function, SigmoidoidTransformer(predictScaling(modelInfo, meanCalculator)))
+            return DerivativeCalculator(meanCalculator, modelInfo.function, NonInvertingSigmoidoidTransformer(predictScaling(modelInfo, meanCalculator)))
         }
 
         private fun predictScaling(modelInfo: ModelInfo, meanCalculator: MeanCalculator): Double {
@@ -49,4 +49,8 @@ class SigmoidoidTransformer(val sigmoidScaling: Double) : InvertibleTransformati
             return values.sorted().drop(values.size / 4).dropLast(values.size / 4).average()
         }
     }
+}
+
+class NonInvertingSigmoidoidTransformer(sigmoidScaling: Double) : SigmoidoidTransformer(sigmoidScaling) {
+    override fun inverse(v: Double): Double = v
 }
