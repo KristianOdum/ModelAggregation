@@ -8,7 +8,7 @@ import kotlin.math.abs
 import kotlin.math.log
 import kotlin.math.roundToInt
 
-class GoldenSectionGD(modelInfo: ModelInfo, var beta: Double = 1.0) : GradientDescent(modelInfo) {
+class GoldenSectionGD(modelInfo: ModelInfo, derivativeCalculator: DerivativeCalculator, costCalculator: CostCalculator, var beta: Double = 1.0) : GradientDescent(modelInfo, derivativeCalculator, costCalculator) {
     var tolerance = 1.0E-5
     var alpha = Double.NaN
         private set
@@ -17,7 +17,7 @@ class GoldenSectionGD(modelInfo: ModelInfo, var beta: Double = 1.0) : GradientDe
         private const val goldenRatio = 1.61803398875
     }
 
-    private val GSScostCalculator = CostCalculator(modelFunction)
+    private val GSScostCalculator = costCalculator.clone() as CostCalculator
 
     override fun step(): SimpleMatrix {
         alpha = gss { s -> GSScostCalculator.cost((lumpingMatrix + gradient.scale(-s)).rowNorm()) }

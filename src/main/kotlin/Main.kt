@@ -1,6 +1,11 @@
 import gradientDescent.*
+import kotlin.math.pow
 
 fun main() {
-    GradientDescentTester().run()
+
+    fun <T> Sequence<T>.repeat() = sequence { while (true) yieldAll(this@repeat) }
+
+    fun main() {
+            }
 }
 

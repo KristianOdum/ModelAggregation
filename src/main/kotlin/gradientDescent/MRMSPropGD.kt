@@ -1,12 +1,13 @@
 package gradientDescent
 
 import org.ejml.simple.SimpleMatrix
+import utility.CostCalculator
 import utility.ModelInfo
 import utility.create
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-class MRMSPropGD(modelInfo: ModelInfo, learningRate: Double = 0.003) : AbstractDynamicGD(modelInfo = modelInfo, learningRate) {
+class MRMSPropGD(modelInfo: ModelInfo, learningRate: Double = 0.003, derivativeCalculator: DerivativeCalculator, costCalculator: CostCalculator) : AbstractDynamicGD(modelInfo = modelInfo, learningRate, derivativeCalculator, costCalculator) {
     private var prevGradSquared = lumpingMatrix.create { _ -> 0.0 }
     private val gradSquared = lumpingMatrix.create { _ -> 0.0 }
     private val beta = 0.90

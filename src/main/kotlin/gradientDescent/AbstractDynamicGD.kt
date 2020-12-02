@@ -1,10 +1,11 @@
 package gradientDescent
 
 import org.ejml.simple.SimpleMatrix
+import utility.CostCalculator
 import utility.ModelInfo
 import utility.create
 
-abstract class AbstractDynamicGD(modelInfo: ModelInfo, private val learningRate: Double = 0.003) : GradientDescent(modelInfo = modelInfo) {
+abstract class AbstractDynamicGD(modelInfo: ModelInfo, val learningRate: Double = 0.003, derivativeCalculator: DerivativeCalculator, costCalculator: CostCalculator) : GradientDescent(modelInfo, derivativeCalculator, costCalculator) {
     val learningRates = lumpingMatrix.create { _ -> learningRate }
     private var previousGradient: SimpleMatrix
 

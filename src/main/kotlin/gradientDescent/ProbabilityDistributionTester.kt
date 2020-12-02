@@ -1,5 +1,6 @@
 package gradientDescent
 
+import CostFunctionOptimizer
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -13,7 +14,7 @@ import java.util.*
 import kotlin.math.log
 
 class ProbabilityDistributionTester {
-    fun run() {
+    fun run(method: CostFunctionOptimizer) {
         val iterations = 500
         val maxEpochs = 3000
         val minEpochs = 100
@@ -32,7 +33,6 @@ class ProbabilityDistributionTester {
             val jobs = (0..iterations).map {
                 GlobalScope.launch {
                     val mi = SIRModelCreator().random(sirCount, 1)
-                    val method = GoldenSectionGD(mi, learningRate)
                     var best = Double.MAX_VALUE
 
                     val plotter = Plotter()
@@ -44,7 +44,7 @@ class ProbabilityDistributionTester {
 
                     for (j in 0..maxEpochs) {
                         method.iterate()
-                        val c = method.cost
+                        val c = method.bestCost
 
                         series.xy(j.toDouble(), log(c, 10.0))
                         if (c < best)

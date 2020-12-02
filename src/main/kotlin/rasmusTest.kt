@@ -10,19 +10,19 @@ import utility.vegas.IncrementPartition
 import java.lang.Integer.max
 import java.math.BigDecimal
 import java.math.RoundingMode
-import kotlin.math.abs
-import kotlin.math.log2
-import kotlin.math.pow
-import kotlin.math.roundToInt
+import kotlin.math.*
 import kotlin.random.Random
+
 
 fun main() {
 
     val mia = T3ModelCreator().createModel(1)
 
-    val cfot = CostFunctionOptimizerTester(200, 1, 10) {
-        val mi = T3ModelCreator().createModel(1)
-        GoldenSectionGD(mi)
+    val cfot = CostFunctionOptimizerTester(200, 100, 10) {
+        val mi = T10ModelCreator().createModel(1)
+        val derCalculator = DerivativeCalculator(MonteCarloMeanCalculator(mi.lumpingMatrix.numCols()), mi.function, SigmoidoidTransformer(1000.0))
+        val costCalculator = CostCalculator(MonteCarloMeanCalculator(mi.lumpingMatrix.numCols()), mi.function, SigmoidoidTransformer(1000.0))
+        GoldenSectionGD(mi, derCalculator, costCalculator)
     }
 
     cfot.run()

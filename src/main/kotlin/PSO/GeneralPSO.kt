@@ -3,7 +3,7 @@ package PSO
 import org.ejml.simple.SimpleMatrix
 import utility.*
 
-class GeneralPSO(modelInfo: ModelInfo, val swarmCount: Int, particleCount: Int, val psoInfo: PSOInfo) : ParticleSwarmOptimization<VelocityParticle>(modelInfo) {
+class GeneralPSO(modelInfo: ModelInfo, val swarmCount: Int, particleCount: Int, val psoInfo: PSOInfo, costCalculator: CostCalculator) : ParticleSwarmOptimization<VelocityParticle>(modelInfo, costCalculator) {
 
     override var swarms = MutableList(swarmCount) { Swarm(
             MutableList(particleCount) { VelocityParticle(modelInfo.lumpingMatrix.numCols(), modelInfo.lumpingMatrix.numRows(), psoInfo.bounds) }

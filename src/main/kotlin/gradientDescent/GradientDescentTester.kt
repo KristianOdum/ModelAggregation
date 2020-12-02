@@ -1,5 +1,5 @@
 package gradientDescent
-
+/*
 import utility.*
 import java.awt.Color
 import kotlin.math.log
@@ -130,3 +130,5 @@ fun plotTitle(runThese: List<Pair<Pair<GradientDescent, String>, Pair<Plot.Data,
 
     return res
 }
+
+ */

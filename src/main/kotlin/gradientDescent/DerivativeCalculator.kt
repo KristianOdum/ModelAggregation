@@ -2,11 +2,9 @@ package gradientDescent
 
 import org.ejml.simple.SimpleMatrix
 import utility.*
-import kotlin.math.abs
-import kotlin.math.exp
-import kotlin.math.pow
+import kotlin.math.*
 
-class DerivativeCalculator(modelFunction: (SimpleMatrix) -> SimpleMatrix) : ModelIntegralCalculator(modelFunction) {
+open class DerivativeCalculator(private val meanCalculator: MonteCarloMeanCalculator, modelFunction: (SimpleMatrix) -> SimpleMatrix, private val transformer: InvertibleTransformation = IdentityTransformer()) : ModelSpecificCost(modelFunction) {
     companion object {
         private const val h = 1.0E-8
     }
@@ -21,32 +19,11 @@ class DerivativeCalculator(modelFunction: (SimpleMatrix) -> SimpleMatrix) : Mode
         val mn = m.withSet(e, m[e] + h2)
         val mnbarmn = mn.rightInverse().mult(mn)
 
-
-        return integral {
-            val x = randMatrix(m.numCols(), 1, xRange)
-            val spc = (specificCost(mp, mpbarmp, x).pow(2.0) - specificCost(mn, mnbarmn, x).pow(2.0)) / (h1 - h2)
-
-            sigmoidoid(spc)
+        val mean = meanCalculator.calculate { x ->
+            val slope = (specificCost(mp, mpbarmp, x).pow(2.0) - specificCost(mn, mnbarmn, x).pow(2.0)) / (h1 - h2)
+            transformer.transform(slope)
         }
+
+        return transformer.inverse(mean)
     }
-
-    private fun sigmoidoid(x: Double) = 2.0 /  (1 + exp(-x)) - 1.0
-
-    // Calculates d/dalpha C(m + d*alpha)
-    fun oneDimensionalDerivative(m: SimpleMatrix, d: SimpleMatrix, alpha: Double): Double {
-        val h1 = (alpha + h) - alpha
-        val h2 = -(alpha - h) + alpha
-
-        val mp = m.plus(d.scale(alpha + h1))
-        val mpbarmp = mp.rightInverse().mult(mp)
-
-        val mn = m.plus(d.scale(alpha - h2))
-        val mnbarmn = mn.rightInverse().mult(mn)
-
-        return integral {
-            val x = randMatrix(m.numCols(), 1, xRange)
-            (specificCost(mp, mpbarmp, x) - specificCost(mn, mnbarmn, x)) / (h1 + h2)
-        }
-    }
-
 }
