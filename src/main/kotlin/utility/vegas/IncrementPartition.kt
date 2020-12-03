@@ -9,11 +9,11 @@ fun <T> MutableList<T>.removeRange(range: IntRange) {
     range.forEach { this.removeAt(range.first) }
 }
 
-open class IncrementPartition(val initialIncrements: Int, private val maxValue: Double): Iterable<OpenEndDoubleRange> {
+open class IncrementPartition(val initialIncrements: Int, private val range: OpenEndDoubleRange): Iterable<OpenEndDoubleRange> {
 
-    private val increments = MutableList(initialIncrements) { maxValue * it / initialIncrements }
+    private val increments = MutableList(initialIncrements) { range.size * it / initialIncrements + range.from }
 
-    operator fun get(i: Int): OpenEndDoubleRange = increments[i] until (increments.getOrNull(i +1) ?: maxValue)
+    operator fun get(i: Int): OpenEndDoubleRange = increments[i] until (increments.getOrNull(i +1) ?: range.to)
 
     val size get() = increments.size
 
@@ -64,8 +64,7 @@ open class IncrementPartition(val initialIncrements: Int, private val maxValue: 
         }
     }
 
-
-    override fun iterator(): Iterator<OpenEndDoubleRange> = (increments + listOf(maxValue)).zipWithNext().map { it.first until it.second }.listIterator()
+    override fun iterator(): Iterator<OpenEndDoubleRange> = (increments + listOf(range.to)).zipWithNext().map { it.first until it.second }.listIterator()
 
     override fun toString(): String = iterator().asSequence().joinToString(", ")
 }
