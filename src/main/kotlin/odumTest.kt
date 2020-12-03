@@ -6,28 +6,27 @@ import gradientDescent.MMomentumGD
 import utility.*
 
 fun main() {
-    val model = T12ModelCreator().createModel(1)
+    val model = T14ModelCreator().createModel(1)
     val iterations = 100
     val tolerance = 0.05
-    val derTolerance = 0.8
-    val i = 12
-    val dims = model.lumpingMatrix.numCols()
-
-
-    val costCalculator = SigmoidoidTransformer.CreateCostFromPrediction(model, MonteCarloMeanCalculator(dims, tolerance))
-    val derCalculator = SigmoidoidTransformer.CreateDerivativeFromPrediction(model, MonteCarloMeanCalculator(dims, derTolerance))
-
+    val derTolerance = 1.0
+    val i = 14
+    val costCalculator = SigmoidoidTransformer.CreateCostFromPrediction(model, MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), tolerance))
+    val derCalculator = SigmoidoidTransformer.CreateDerivativeFromPrediction(model, MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), derTolerance))
 
     val pso = CostFunctionOptimizerTester(3000, iterations, 300, "PSO$i.txt") {
-        GeneralPSO(model, 1, 20, PSOInfo(3000), costCalculator)
+        val modelinfo = ModelInfo(randMatrix(model.lumpingMatrix.numRows(), model.lumpingMatrix.numCols(), -1.0 until 1.0), model.function)
+        GeneralPSO(modelinfo, 1, 20, PSOInfo(3000), costCalculator)
     }
 
     val line_search = CostFunctionOptimizerTester(1000, iterations, 10, "line_search$i.txt") {
-        GoldenSectionGD(model, derCalculator, costCalculator)
+        val modelinfo = ModelInfo(randMatrix(model.lumpingMatrix.numRows(), model.lumpingMatrix.numCols(), -1.0 until 1.0), model.function)
+        GoldenSectionGD(modelinfo, derCalculator, costCalculator)
     }
 
-    val mmomentum = CostFunctionOptimizerTester(2000, iterations, 50, "mmomentum$i.txt") {
-        MMomentumGD(model, 0.003, 2000, derCalculator, costCalculator)
+    val mmomentum = CostFunctionOptimizerTester(5000, iterations, 50, "mmomentum$i.txt") {
+        val modelinfo = ModelInfo(randMatrix(model.lumpingMatrix.numRows(), model.lumpingMatrix.numCols(), -1.0 until 1.0), model.function)
+        MMomentumGD(modelinfo, 0.003, 5000, derCalculator, costCalculator)
     }
 
     println("Starting PSO")
