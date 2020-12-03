@@ -9,7 +9,7 @@ fun main() {
     val model = T9ModelCreator().createModel(1)
     val iterations = 100
     val tolerance = 0.05
-    val derTolerance = 1.0
+    val derTolerance = 0.5
     val i = 9
 
     val costCalculator = CostCalculator(MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), tolerance), model.function)

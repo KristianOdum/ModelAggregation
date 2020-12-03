@@ -9,7 +9,7 @@ fun main() {
     val model = T14ModelCreator().createModel(1)
     val iterations = 100
     val tolerance = 0.05
-    val derTolerance = 1.0
+    val derTolerance = 0.5
     val i = 14
 
     val costCalculator = SigmoidoidTransformer.CreateCostFromPrediction(model, MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), tolerance))

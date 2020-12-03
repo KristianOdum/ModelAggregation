@@ -6,7 +6,7 @@ import utility.*
 class GeneralPSO(modelInfo: ModelInfo, val swarmCount: Int, particleCount: Int, val psoInfo: PSOInfo, costCalculator: CostCalculator) : ParticleSwarmOptimization<VelocityParticle>(modelInfo, costCalculator) {
 
     override var swarms = MutableList(swarmCount) { Swarm(
-            MutableList(particleCount) { VelocityParticle(modelInfo.lumpingMatrix.numCols(), modelInfo.lumpingMatrix.numRows(), psoInfo.bounds) }
+            MutableList(particleCount) { VelocityParticle(modelInfo.lumpingMatrix.numCols(), modelInfo.lumpingMatrix.numRows(), psoInfo.bounds).apply { bestCost = costCalculator.cost(this.position) } }
     ) }
 
     override fun updateParticle(swarm: Swarm<VelocityParticle>, particle: VelocityParticle) {
