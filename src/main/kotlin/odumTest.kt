@@ -31,10 +31,10 @@ fun main() {
     }
 
     println("Starting PSO")
-    //pso.run()
+    pso.run()
 
     println("Starting Line Search")
-    //line_search.run()
+    line_search.run()
 
     println("Starting MMomentum")
     mmomentum.run()
