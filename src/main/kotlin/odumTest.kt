@@ -6,14 +6,14 @@ import gradientDescent.MMomentumGD
 import utility.*
 
 fun main() {
-    val model = T14ModelCreator().createModel(3)
+    val model = T7ModelCreator().createModel(3)
     val iterations = 8
     val tolerance = 0.05
-    val derTolerance = 1.0
+    val derTolerance = 0.5
     val i = 7
 
-    val costCalculator = SigmoidoidTransformer.CreateCostFromPrediction(model, MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), tolerance))
-    val derCalculator = SigmoidoidTransformer.CreateDerivativeFromPrediction(model, MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), derTolerance))
+    val costCalculator = CostCalculator(MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), tolerance), model.function)
+    val derCalculator = DerivativeCalculator(MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), derTolerance), model.function)
 
     val pso = CostFunctionOptimizerTester(3000, iterations, 300, "PSO$i.txt") {
         val modelinfo = ModelInfo(randMatrix(model.lumpingMatrix.numRows(), model.lumpingMatrix.numCols(), -1.0 until 1.0), model.function)
