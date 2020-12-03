@@ -6,11 +6,13 @@ import gradientDescent.MMomentumGD
 import utility.*
 
 fun main() {
-    val model = T7ModelCreator().createModel(3)
-    val iterations = 8
+    val model = T9ModelCreator().createModel(3)
+    val iterations = 100
     val tolerance = 0.05
     val derTolerance = 0.5
-    val i = 7
+
+    // Set this to your T number
+    val i = 9
 
     val costCalculator = CostCalculator(MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), tolerance), model.function)
     val derCalculator = DerivativeCalculator(MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), derTolerance), model.function)
@@ -33,9 +35,9 @@ fun main() {
     println("Starting PSO")
     pso.run()
 
-    println("Starting Line Search")
+    println("\nStarting Line Search")
     line_search.run()
 
-    println("Starting MMomentum")
+    println("\nStarting MMomentum")
     mmomentum.run()
 }
