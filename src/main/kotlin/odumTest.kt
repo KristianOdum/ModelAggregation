@@ -26,7 +26,7 @@ fun main() {
 
     val mmomentum = CostFunctionOptimizerTester(5000, iterations, 50, "mmomentum$i.txt") {
         val modelinfo = ModelInfo(randMatrix(model.lumpingMatrix.numRows(), model.lumpingMatrix.numCols(), -1.0 until 1.0), model.function)
-        MMomentumGD(modelinfo, 0.003, 2000, derCalculator, costCalculator)
+        MMomentumGD(modelinfo, 0.003, 5000, derCalculator, costCalculator)
     }
 
     println("Starting PSO")
