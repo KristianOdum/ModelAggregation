@@ -6,7 +6,7 @@ import gradientDescent.MMomentumGD
 import utility.*
 
 fun main() {
-    val mc = T12ModelCreator()
+    val mc = T14ModelCreator()
     val model = mc.createModel(1)
     val iterations = 100
     val tolerance = 0.05
