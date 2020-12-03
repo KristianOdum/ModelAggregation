@@ -6,11 +6,12 @@ import gradientDescent.MMomentumGD
 import utility.*
 
 fun main() {
-    val model = T14ModelCreator().createModel(1)
-    val iterations = 100
+    val model = T14ModelCreator().createModel(3)
+    val iterations = 8
     val tolerance = 0.05
     val derTolerance = 1.0
-    val i = 14
+    val i = 7
+
     val costCalculator = SigmoidoidTransformer.CreateCostFromPrediction(model, MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), tolerance))
     val derCalculator = SigmoidoidTransformer.CreateDerivativeFromPrediction(model, MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), derTolerance))
 
@@ -24,16 +25,16 @@ fun main() {
         GoldenSectionGD(modelinfo, derCalculator, costCalculator)
     }
 
-    val mmomentum = CostFunctionOptimizerTester(2000, iterations, 50, "mmomentum$i.txt") {
-        val modelinfo = ModelInfo(randMatrix(model.lumpingMatrix.numRows(), model.lumpingMatrix.numCols(), -1.0 until -1.0), model.function)
+    val mmomentum = CostFunctionOptimizerTester(5000, iterations, 50, "mmomentum$i.txt") {
+        val modelinfo = ModelInfo(randMatrix(model.lumpingMatrix.numRows(), model.lumpingMatrix.numCols(), -1.0 until 1.0), model.function)
         MMomentumGD(modelinfo, 0.003, 2000, derCalculator, costCalculator)
     }
 
     println("Starting PSO")
-    pso.run()
+    //pso.run()
 
     println("Starting Line Search")
-    line_search.run()
+    //line_search.run()
 
     println("Starting MMomentum")
     mmomentum.run()

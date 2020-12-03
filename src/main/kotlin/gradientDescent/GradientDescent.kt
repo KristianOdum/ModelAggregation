@@ -28,7 +28,7 @@ abstract class GradientDescent(modelInfo: ModelInfo, protected val derivativeCal
             return field
     }
         private set
-    override var bestCost = Double.MAX_VALUE
+    final override var bestCost: Double
 
     override fun iterate() {
         if (updateGradient)
@@ -38,6 +38,10 @@ abstract class GradientDescent(modelInfo: ModelInfo, protected val derivativeCal
 
         lumpingMatrix = (lumpingMatrix + delta).MGSON()
         cost
+    }
+
+    init {
+        bestCost = costCalculator.cost(lumpingMatrix)
     }
 
     fun updateGradient() {

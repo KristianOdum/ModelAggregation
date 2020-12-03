@@ -3,12 +3,13 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Mutex
+import utility.CostCalculator
 import java.io.File
 import java.util.*
 import kotlin.system.measureTimeMillis
 import kotlin.time.measureTime
 
-class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterations: Int, val maxPlateau : Int, private val filePath: String = "CostFunctionOptimizerTesterOutput.txt", val factory: () -> CostFunctionOptimizer)  {
+class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterations: Int, private val maxPlateau : Int, private val filePath: String = "CostFunctionOptimizerTesterOutput.txt",val factory: () -> CostFunctionOptimizer)  {
     fun run() {
         val data = File(filePath)
         val dataMutex = Mutex()
@@ -25,11 +26,10 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
                 val startTime = System.currentTimeMillis()
                 var bestTime = startTime
                 var bestIteration = 0
-                var startCost = 0.0
+                val startCost = cfo.bestCost
 
                 while (plateauCounter < maxPlateau && lastBestCost >= 1.0E-8 && i < maxEpochs) {
                     cfo.iterate()
-                    if(i == 0) startCost = cfo.bestCost
 
                     if (cfo.bestCost >= lastBestCost)
                         plateauCounter++
