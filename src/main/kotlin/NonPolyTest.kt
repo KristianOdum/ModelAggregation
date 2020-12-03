@@ -17,17 +17,17 @@ fun main() {
     val costCalculator = CostCalculator(MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), tolerance), model.function)
     val derCalculator = DerivativeCalculator(MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), derTolerance), model.function)
 
-    val pso = CostFunctionOptimizerTester(3000, iterations, 300, "PSO$i.txt") {
+    val pso = CostFunctionOptimizerTester(3000, iterations, 300, "PSO_T$i.txt") {
         val modelinfo = ModelInfo(randMatrix(model.lumpingMatrix.numRows(), model.lumpingMatrix.numCols(), -1.0 until 1.0), model.function)
         GeneralPSO(modelinfo, 1, 20, PSOInfo(3000), costCalculator)
     }
 
-    val line_search = CostFunctionOptimizerTester(1000, iterations, 10, "line_search$i.txt") {
+    val line_search = CostFunctionOptimizerTester(1000, iterations, 10, "line_search_T$i.txt") {
         val modelinfo = ModelInfo(randMatrix(model.lumpingMatrix.numRows(), model.lumpingMatrix.numCols(), -1.0 until 1.0), model.function)
         GoldenSectionGD(modelinfo, derCalculator, costCalculator)
     }
 
-    val mmomentum = CostFunctionOptimizerTester(5000, iterations, 50, "mmomentum$i.txt") {
+    val mmomentum = CostFunctionOptimizerTester(5000, iterations, 50, "mmomentum_T$i.txt") {
         val modelinfo = ModelInfo(randMatrix(model.lumpingMatrix.numRows(), model.lumpingMatrix.numCols(), -1.0 until 1.0), model.function)
         MMomentumGD(modelinfo, 0.003, 5000, derCalculator, costCalculator)
     }
