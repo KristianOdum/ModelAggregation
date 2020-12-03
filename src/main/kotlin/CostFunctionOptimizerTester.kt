@@ -24,7 +24,7 @@ class CostFunctionOptimizerTester(private val maxEpochs: Int, private val iterat
                 val cfo = factory()
                 var i = 0
                 val startTime = System.currentTimeMillis()
-                var bestTime = startTime
+                var bestTime = 0L
                 var bestIteration = 0
                 val startCost = cfo.bestCost
 
