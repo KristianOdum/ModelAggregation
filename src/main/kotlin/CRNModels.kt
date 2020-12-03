@@ -6,6 +6,7 @@ import utility.randMatrix
 import utility.until
 import kotlin.math.pow
 
+//BIOMD0000000010
 class T3ModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {
         return ModelInfo(
