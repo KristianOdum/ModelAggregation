@@ -16,7 +16,7 @@ class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculat
 
     private val incrementCount = 50
     private val subdivisionCount = 1000
-    private val convergenceRate = 0.8
+    private val convergenceRate = 0.5
 
     private val increments = Array(dimensionCount) {
         IncrementPartition(incrementCount, xRange)
@@ -28,10 +28,7 @@ class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculat
         return calcIntegralWithPartitions(evalpoint)
     }
 
-    fun subpartition(evalpoint: (x: SimpleMatrix) -> Double) {
-        val lastSubdivisionCounts = Array(dimensionCount) {
-            Array(incrementCount) { 0 }
-        }
+    private fun subpartition(evalpoint: (x: SimpleMatrix) -> Double) {
         // Calculate the subdivisionCount to be divisible by increment count
         val K = (subdivisionCount.toDouble() / incrementCount).roundToInt() * incrementCount
 
@@ -67,15 +64,12 @@ class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculat
                 val totalArea = incrementArea.sum()
 
                 // Calculate subdivisions
+                val damppart = K * (1 - convergenceRate) / incrementCount
                 val ms = incrementArea.map {
                     val r = it / totalArea
-                    (K * it / r).roundToInt()
+                    (K * convergenceRate * r + damppart).roundToInt() + 1
                     //(K * ((r-1)/log2(r)).pow(convergenceRate) / 10.0).roundToInt() + 1
                 }
-
-                val g = incrementArea.map { abs(it - totalArea / incrementArea.size) }.average()
-                if (dim == 1)
-                    println(g)
 
                 // If all the partitions have equal partitioning we are done
                 val e = (K + incrementCount) / incrementCount // Expected
@@ -91,11 +85,11 @@ class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculat
         }
     }
 
-    fun calcIntegralWithPartitions(evalpoint: (x: SimpleMatrix) -> Double): Double {
+    private fun calcIntegralWithPartitions(evalpoint: (x: SimpleMatrix) -> Double): Double {
         var integral = 1.0
         var space = 0.0
         // Actually calculate the integral
-        for (i in 0 until 100000) {
+        for (i in 0 until 1000) {
             // Choose random partition from each dimension
             val partitions = increments.map { it.randomIndex() }
 
@@ -114,5 +108,4 @@ class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculat
 
         return integral / space
     }
-
 }
