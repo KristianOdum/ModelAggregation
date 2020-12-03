@@ -6,7 +6,7 @@ import gradientDescent.MMomentumGD
 import utility.*
 
 fun main() {
-    val mc = T6ModelCreator()
+    val mc = T7ModelCreator()
     val model = mc.createModel(1)
     val iterations = 100
     val tolerance = 0.05
@@ -36,8 +36,8 @@ fun main() {
     pso.run()
 
     println("\nStarting Line Search")
-    line_search.run()
+    //line_search.run()
 
     println("\nStarting MMomentum")
-    mmomentum.run()
+    //mmomentum.run()
 }
