@@ -3,7 +3,9 @@ package PSO
 import org.ejml.simple.SimpleMatrix
 import utility.*
 
-class GeneralPSO(modelInfo: ModelInfo, val swarmCount: Int, particleCount: Int, val psoInfo: PSOInfo, costCalculator: CostCalculator) : ParticleSwarmOptimization<VelocityParticle>(modelInfo, costCalculator) {
+class GeneralPSO(modelInfo: ModelInfo, val swarmCount: Int, particleCount: Int, val psoInfo: PSOInfo, costCalculator: CostCalculator,
+                 lockedRowCount: Int = 0
+) : ParticleSwarmOptimization<VelocityParticle>(modelInfo, costCalculator, lockedRowCount) {
 
     override var swarms = MutableList(swarmCount) { Swarm(
             MutableList(particleCount) { VelocityParticle(modelInfo.lumpingMatrix.numCols(), modelInfo.lumpingMatrix.numRows(), psoInfo.bounds).apply { bestCost = costCalculator.cost(this.position) } }
@@ -14,10 +16,14 @@ class GeneralPSO(modelInfo: ModelInfo, val swarmCount: Int, particleCount: Int, 
         val randNumsGlobal = randMatrix(particle.position.numRows(), particle.position.numCols(), 0.0 until 1.0)
         val randNumsLocal = randMatrix(particle.position.numRows(), particle.position.numCols(), 0.0 until 1.0)
 
-        val newVelocity = particle.velocity.scale(psoInfo.omegaMax - (psoInfo.omegaMax - psoInfo.omegaMin) / psoInfo.maxIterations * swarm.currentIteration) +
+        var newVelocity = particle.velocity.scale(psoInfo.omegaMax - (psoInfo.omegaMax - psoInfo.omegaMin) / psoInfo.maxIterations * swarm.currentIteration) +
                 particle.bestPosition.minus(particle.position).hadamard(randNumsParticle).scale(psoInfo.accelParticle) +
                 //calcLocalBestPosition(swarm, particle, psoInfo.neighborhoodSize).minus(particle.position).hadamard(randNumsLocal).scale(psoInfo.accelLocal) +
                 swarm.globalBestPosition.minus(particle.position).hadamard(randNumsGlobal).scale(psoInfo.accelGlobal)
+
+        // Ensure that locked rows have 0 velocity
+        for (i in 0 until lockedRowCount)
+            newVelocity.setRow(i, SimpleMatrix(newVelocity.numCols(), 1).create { _ -> 0.0 })
 
         particle.velocity = checkVelocityBound(newVelocity, psoInfo)
         particle.position = (particle.position + particle.velocity).MGSON()

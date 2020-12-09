@@ -9,7 +9,8 @@ import kotlinx.coroutines.sync.Mutex
 import org.ejml.simple.SimpleMatrix
 import utility.*
 
-abstract class ParticleSwarmOptimization<T>(modelInfo: ModelInfo, val costCalculator: CostCalculator) : CostFunctionOptimizer where T : Particle {
+abstract class ParticleSwarmOptimization<T>(modelInfo: ModelInfo, val costCalculator: CostCalculator,
+                                            override var lockedRowCount: Int) : CostFunctionOptimizer where T : Particle {
     abstract var swarms: MutableList<Swarm<T>>
 
     val particleCount get() = swarms.sumOf { it.particles.size }

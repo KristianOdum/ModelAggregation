@@ -36,8 +36,8 @@ fun main() {
     pso.run()
 
     println("\nStarting Line Search")
-    //line_search.run()
+    line_search.run()
 
     println("\nStarting MMomentum")
-    //mmomentum.run()
+    mmomentum.run()
 }

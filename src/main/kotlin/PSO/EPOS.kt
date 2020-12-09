@@ -17,7 +17,9 @@ class StagnationParticle(columns: Int, rows: Int, bounds: OpenEndDoubleRange) : 
         }
 }
 
-class EPSO(modelInfo: ModelInfo, swarmCount: Int, particleCount: Int, val psoInfo: PSOInfo, costCalculator: CostCalculator) : ParticleSwarmOptimization<StagnationParticle>(modelInfo, costCalculator) {
+class EPSO(modelInfo: ModelInfo, swarmCount: Int, particleCount: Int, val psoInfo: PSOInfo, costCalculator: CostCalculator,
+           lockedRowCount: Int
+) : ParticleSwarmOptimization<StagnationParticle>(modelInfo, costCalculator, lockedRowCount) {
     override var swarms = MutableList(swarmCount) { Swarm(
             MutableList(particleCount) { StagnationParticle(modelInfo.lumpingMatrix.numCols(), modelInfo.lumpingMatrix.numRows(), -1.0 until 1.0) }
     ) }
@@ -48,4 +50,8 @@ class EPSO(modelInfo: ModelInfo, swarmCount: Int, particleCount: Int, val psoInf
                     bestPositionPrime.minus(particle.position).hadamard(randNumsParticle).scale(psoInfo.accelParticle)
         }
     }
+
+    override var lockedRowCount: Int
+        get() = TODO("Not yet implemented")
+        set(value) {}
 }

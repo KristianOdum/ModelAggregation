@@ -142,15 +142,10 @@ fun SimpleMatrix.dot2(v: SimpleMatrix): Double {
 
 fun SimpleMatrix.setRow(row: Int, vector: SimpleMatrix): SimpleMatrix {
     val final = SimpleMatrix(this)
-    if (vector.numCols() > vector.numRows()) {
-        for (col in 0 until numCols()) {
-            final[row, col] = vector[0, col]
-        }
-    } else {
-        val col = row
-        for (row in 0 until numRows()) {
-            final[row, col] = vector[row, 0]
-        }
+    val tvector = if (vector.numCols() > vector.numRows()) vector else vector.transpose()
+
+    for (col in 0 until numCols()) {
+        final[row, col] = tvector[0, col]
     }
     return final
 }

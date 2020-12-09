@@ -2,10 +2,7 @@ package utility.vegas
 
 import Average
 import org.ejml.simple.SimpleMatrix
-import utility.MeanCalculator
-import utility.create
-import utility.nextDouble
-import utility.rightInverse
+import utility.*
 import kotlin.math.abs
 import kotlin.math.log2
 import kotlin.math.pow
@@ -15,7 +12,7 @@ import kotlin.random.Random
 class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculator(dimensionCount, tolerance) {
 
     private val incrementCount = 50
-    private val subdivisionCount = 1000
+    private val subdivisionCount = incrementCount * 20
     private val convergenceRate = 0.5
 
     private val increments = Array(dimensionCount) {
@@ -23,12 +20,14 @@ class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculat
     }
 
     override fun calculate(evalpoint: (x: SimpleMatrix) -> Double): Double {
-        subpartition(evalpoint)
+        val (integral, invsigma) = subpartition(evalpoint)
 
-        return calcIntegralWithPartitions(evalpoint)
+        return calcIntegralWithPartitions(evalpoint, integral, invsigma)
     }
 
-    private fun subpartition(evalpoint: (x: SimpleMatrix) -> Double) {
+    private fun subpartition(evalpoint: (x: SimpleMatrix) -> Double): Pair<Double, Double> {
+        val ies = mutableListOf<IntegralEstimation>()
+
         // Calculate the subdivisionCount to be divisible by increment count
         val K = (subdivisionCount.toDouble() / incrementCount).roundToInt() * incrementCount
 
@@ -38,7 +37,10 @@ class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculat
             // The function evaluations for each partition
             val fs = Array(dimensionCount) { index -> Array(increments[index].size) { Average() } }
 
-            for (j in 0 until 100000) {
+            val ie = IntegralEstimation()
+            ies.add(ie)
+
+            for (j in 0 until 10000) {
                 // Choose random partition from each dimension
                 val partitions = increments.map { it.randomIndex() }
 
@@ -47,10 +49,14 @@ class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculat
                     .create { it -> Random.nextDouble(increments[it][partitions[it]]) }
 
                 val c = evalpoint(x)
+                var sp = 1.0
 
                 for ((dim, pi) in partitions.withIndex()) {
                     fs[dim][pi].add(c)
+                    sp *= increments[dim][pi].size
                 }
+
+                ie.add(c * sp, sp)
             }
 
             // Update intervals for each dimension
@@ -73,7 +79,7 @@ class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculat
 
                 // If all the partitions have equal partitioning we are done
                 val e = (K + incrementCount) / incrementCount // Expected
-                if (ms.all { abs(it - e) <= 1 }) {
+                if (ms.all { abs(it - e) <= 2 }) {
                     unfinishedDimensions.remove(dim)
                     continue@subdivision
                 }
@@ -83,13 +89,24 @@ class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculat
                 increments[dim].mergeToInitialSize()
             }
         }
+
+        val invsigma2sum = ies.map { 1 / it.sigma2 }.sum()
+        val integralsum = ies.map { it.integral / it.sigma2 }.sum()
+
+        return Pair(integralsum, invsigma2sum)
     }
 
-    private fun calcIntegralWithPartitions(evalpoint: (x: SimpleMatrix) -> Double): Double {
-        var integral = 1.0
-        var space = 0.0
+    private fun calcIntegralWithPartitions(evalpoint: (x: SimpleMatrix) -> Double, previntegral: Double, previnvsigma: Double): Double {
+        val ie = IntegralEstimation()
+
+        val sigma2 = { 1 / (previnvsigma + 1 / ie.sigma2) }
+        val integral = { sigma2() * (previntegral + ie.integral / ie.sigma2) }
+
+        val tolerance2 = tolerance * tolerance
+        var i = 0L
+
         // Actually calculate the integral
-        for (i in 0 until 1000) {
+        while (i < 10 || sigma2() > tolerance2 * integral().pow(2)) {
             // Choose random partition from each dimension
             val partitions = increments.map { it.randomIndex() }
 
@@ -102,10 +119,13 @@ class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculat
             for (k in partitions.indices)
                 sp *= increments[k][partitions[k]].size
 
-            integral += c * sp
-            space += sp
+            ie.add(c, sp)
+
+            i++
         }
 
-        return integral / space
+        println("vegas $i")
+
+        return integral()
     }
 }

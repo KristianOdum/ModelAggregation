@@ -17,16 +17,17 @@ import kotlin.system.measureTimeMillis
 
 
 fun main() {
-    val modelInfo = T6ModelCreator().createModel(1)
+    val modelInfo = T7ModelCreator().createModel(1)
 
-    val costCalculator = CostCalculator(VegasMeanCalculator(modelInfo.lumpingMatrix.numCols(), 0.05), modelInfo.function)
+    modelInfo.lumpingMatrix.setRow(0, 0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
-    repeat(25) {
-        var cost: Double
-        val time = measureTimeMillis {
-            cost = costCalculator.cost(modelInfo.lumpingMatrix)
-        }
-        println("$time $cost")
+    val derivativeCalculator = DerivativeCalculator(MonteCarloMeanCalculator(modelInfo.lumpingMatrix.numCols(), 0.5), modelInfo.function)
+    val costCalculator = CostCalculator(MonteCarloMeanCalculator(modelInfo.lumpingMatrix.numCols(), 0.05), modelInfo.function)
+
+    val gs  = GoldenSectionGD(modelInfo, derivativeCalculator, costCalculator, 1.0).apply { lockedRowCount = 1 }
+
+    repeat(100) {
+        gs.iterate()
     }
 }
 

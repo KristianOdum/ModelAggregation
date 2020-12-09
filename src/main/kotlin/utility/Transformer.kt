@@ -5,6 +5,7 @@ import org.ejml.simple.SimpleMatrix
 import kotlin.math.E
 import kotlin.math.exp
 import kotlin.math.log
+import kotlin.math.pow
 
 interface InvertibleTransformation {
     fun transform(v: Double): Double
@@ -37,7 +38,7 @@ open class SigmoidoidTransformer(val sigmoidScaling: Double) : InvertibleTransfo
 
             return trimmedMean {
                 val x = randMatrix(m.numCols(), 1, meanCalculator.xRange)
-                trivDer.specificCost(m, mbarm, x)
+                trivDer.specificCost(m, mbarm, x).pow(2.0)
             }
         }
 

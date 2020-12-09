@@ -4,7 +4,9 @@ import CostFunctionOptimizer
 import org.ejml.simple.SimpleMatrix
 import utility.*
 
-abstract class GradientDescent(modelInfo: ModelInfo, protected val derivativeCalculator: DerivativeCalculator, protected val costCalculator: CostCalculator, var updateGradient: Boolean = true) : CostFunctionOptimizer {
+abstract class GradientDescent(modelInfo: ModelInfo, protected val derivativeCalculator: DerivativeCalculator,
+                               protected val costCalculator: CostCalculator, var updateGradient: Boolean = true,
+                               override var lockedRowCount: Int = 0) : CostFunctionOptimizer {
     var lumpingMatrix = modelInfo.lumpingMatrix.MGSON()
         set(value) {
             hasLumpingMatrixChanged = true
@@ -51,8 +53,13 @@ abstract class GradientDescent(modelInfo: ModelInfo, protected val derivativeCal
     protected abstract fun step(): SimpleMatrix
 
     private fun gradient(): SimpleMatrix {
-        return SimpleMatrix(lumpingMatrix.numRows(), lumpingMatrix.numCols()).create {
-            e -> derivativeCalculator.derivative(lumpingMatrix, e)
+        var g = SimpleMatrix(lumpingMatrix.numRows(), lumpingMatrix.numCols()).create {
+                e -> derivativeCalculator.derivative(lumpingMatrix, e)
         }
+
+        for (i in 0 until lockedRowCount)
+            g = g.setRow(i, SimpleMatrix(g.numCols(), 1).create { _ -> 0.0 })
+
+        return g
     }
 }

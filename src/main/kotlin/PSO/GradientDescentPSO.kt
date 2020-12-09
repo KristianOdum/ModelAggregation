@@ -15,7 +15,9 @@ class GradientDescentParticle<GDType>(columns: Int, rows: Int, bounds: OpenEndDo
         }
 }
 
-class GradientDescentPSO<GDType>(modelInfo: ModelInfo, swarmCount: Int, particleCount: Int, gdFactory: () -> GDType, costCalculator: CostCalculator) : ParticleSwarmOptimization<GradientDescentParticle<GDType>>(modelInfo, costCalculator) where GDType: GradientDescent {
+class GradientDescentPSO<GDType>(modelInfo: ModelInfo, swarmCount: Int, particleCount: Int, gdFactory: () -> GDType, costCalculator: CostCalculator,
+                                 lockedRowCount: Int
+) : ParticleSwarmOptimization<GradientDescentParticle<GDType>>(modelInfo, costCalculator, lockedRowCount) where GDType: GradientDescent {
     override var swarms = MutableList(swarmCount) { Swarm(MutableList(particleCount) { GradientDescentParticle(modelInfo.lumpingMatrix.numCols(), modelInfo.lumpingMatrix.numRows(), -1.0 until 1.0, gdFactory)} ) }
 
     companion object {
