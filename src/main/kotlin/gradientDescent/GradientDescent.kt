@@ -6,7 +6,7 @@ import utility.*
 
 abstract class GradientDescent(modelInfo: ModelInfo, protected val derivativeCalculator: DerivativeCalculator,
                                protected val costCalculator: CostCalculator, var updateGradient: Boolean = true,
-                               override var lockedRowCount: Int = 0) : CostFunctionOptimizer {
+                               override var lockedRowCount: Int = 1) : CostFunctionOptimizer {
     var lumpingMatrix = modelInfo.lumpingMatrix.MGSON()
         set(value) {
             hasLumpingMatrixChanged = true

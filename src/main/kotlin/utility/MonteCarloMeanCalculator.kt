@@ -29,7 +29,6 @@ class MonteCarloMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCal
 
         //println("${this.javaClass.name}\tIterations: $i\tEstimation: ${integral.value.strWidth(12)}\tSkipRate: ${(skipped.toDouble() / (skipped + i)).strWidth(12)}")
 
-        println("normal $i")
         return integral.value
     }
 

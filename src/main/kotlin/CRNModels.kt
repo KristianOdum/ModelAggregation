@@ -1396,6 +1396,80 @@ class T101ModelCreator  {
     }
 }
 
+class T16ModelCreator  {
+    fun createModel(reduction: Int) : ModelInfo {
+        return ModelInfo(
+                randMatrix(7 - reduction, 7, -1.0 until 1.0).MGSON())
+        { y: SimpleMatrix ->
+            val dy = SimpleMatrix(y)
+
+            val kd = 0.334
+
+            val ka = 8.22E-4
+
+            val mu = 0.79
+
+            val ld = 4.49
+
+            val lm = 0.175
+
+            val la = 1.15
+
+            val sdelta = 0.486
+
+            val lambda = 0.00316
+
+            val TIR1T = 18.5
+
+            val alpha_tr = 30.5
+
+
+            dy[0]=mu*y[0]+((-1.0)*ka)*y[0]*y[1]+kd*y[2]+alpha_tr*y[6]
+            dy[1]=((-1.0)*ka)*y[0]*y[1]+kd*y[2]
+            dy[2]=ka*y[0]*y[1]+((-1.0)*kd)*y[2]+((-1.0)*la)*y[2]*y[4]+(lm+ld)*y[3]
+            dy[3]=la*y[2]*y[4]+(((-1.0)*ld)+((-1.0)*lm))*y[3]
+            dy[4]=((-1.0)*la)*y[2]*y[4]+ld*y[3]+lambda*y[4]+sdelta*y[6]
+            dy[5]=((-1.0)*mu)*y[0]+((-1.0)*lambda)*y[4]
+            dy[6]=0.0
+
+            dy
+        }
+    }
+}
+
+//BIOMD0000000459
+class T17ModelCreator  {
+    fun createModel(reduction: Int) : ModelInfo {
+        return ModelInfo(
+                randMatrix(4 - reduction, 4, -1.0 until 1.0).MGSON())
+        { y: SimpleMatrix ->
+            val dy = SimpleMatrix(y)
+
+            val kbd = 0.0164812
+
+            val kbs = 100.0
+
+            val kxd = 1.08559E-9
+
+            val kxs = 9.32517E-8
+
+            val kzd = 1.34615E-7
+
+            val kzs = 9.03538E-7
+
+            val kzx = 0.00317772
+
+
+            dy[0]=0.0
+            dy[1]=kbs*y[0]+(((-kbd)+((-1.0)*kzs))+((-1.0)*kxs))*y[1]+((-1.0)*(-kzd))*y[2]+((-1.0)*(-kzx))*y[2]*y[3]+((-1.0)*(-kxd))*y[3]
+            dy[2]=kzs*y[1]+-kzd*y[2]+-kzx*y[2]*y[3]
+            dy[3]=kxs*y[1]+-kxd*y[3]
+
+            dy
+        }
+    }
+}
+
 
 class TCMQModelCreator  {
     fun createModel(reduction: Int) : ModelInfo {

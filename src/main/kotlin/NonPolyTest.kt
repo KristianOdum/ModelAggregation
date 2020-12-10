@@ -3,10 +3,11 @@ import PSO.PSOInfo
 import gradientDescent.DerivativeCalculator
 import gradientDescent.GoldenSectionGD
 import gradientDescent.MMomentumGD
+import org.ejml.simple.SimpleMatrix
 import utility.*
 
 fun main() {
-    val mc = T13ModelCreator()
+    val mc = T5ModelCreator()
     val model = mc.createModel(1)
     val iterations = 100
     val tolerance = 0.05
