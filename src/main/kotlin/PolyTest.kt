@@ -6,9 +6,9 @@ import gradientDescent.MMomentumGD
 import utility.*
 
 fun main() {
-    val mc = T17ModelCreator()
-    val model = mc.createModel(1)
-    val iterations = 100
+    val mc = T103ModelCreator()
+    val model = mc.createModel(4)
+    val iterations = 1
     val tolerance = 0.05
     val derTolerance = 0.5
 
@@ -17,9 +17,9 @@ fun main() {
     val costCalculator = CostCalculator(MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), tolerance), model.function)
     val derCalculator = DerivativeCalculator(MonteCarloMeanCalculator(model.lumpingMatrix.numCols(), derTolerance), model.function)
 
-    val pso = CostFunctionOptimizerTester(3000, iterations, 300, "PSO_$i.txt") {
+    val pso = CostFunctionOptimizerTester(5000, iterations, 300, "PSO_$i.txt") {
         val modelinfo = ModelInfo(randMatrix(model.lumpingMatrix.numRows(), model.lumpingMatrix.numCols(), -1.0 until 1.0), model.function)
-        GeneralPSO(modelinfo, 1, 20, PSOInfo(3000), costCalculator)
+        GeneralPSO(modelinfo, 1, 60, PSOInfo(5000), costCalculator)
     }
 
     val line_search = CostFunctionOptimizerTester(1000, iterations, 10, "line_search_$i.txt") {
@@ -36,8 +36,8 @@ fun main() {
     pso.run()
 
     println("\nStarting Line Search")
-    line_search.run()
+    //line_search.run()
 
     println("\nStarting MMomentum")
-    mmomentum.run()
+    //mmomentum.run()
 }
