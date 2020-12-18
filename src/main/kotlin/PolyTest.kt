@@ -1,3 +1,4 @@
+import PSO.ExploitingPSO
 import PSO.GeneralPSO
 import PSO.PSOInfo
 import gradientDescent.DerivativeCalculator
@@ -29,7 +30,7 @@ fun main() {
 
     val mmomentum = CostFunctionOptimizerTester(5000, iterations, 50, "mmomentum_$i.txt") {
         val modelinfo = ModelInfo(randMatrix(model.lumpingMatrix.numRows(), model.lumpingMatrix.numCols(), -1.0 until 1.0), model.function)
-        MMomentumGD(modelinfo, 0.003, 5000, derCalculator, costCalculator)
+        MMomentumGD(modelinfo, 0.003, 5000, derCalculator, costCalculator)//.apply { lockedRowCount = 1 }
     }
 
     println("Starting PSO")

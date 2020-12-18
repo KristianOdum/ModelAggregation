@@ -8,6 +8,7 @@ import org.ejml.simple.SimpleMatrix
 import utility.*
 import utility.vegas.IncrementPartition
 import utility.vegas.VegasMeanCalculator
+import java.io.File
 import java.lang.Integer.max
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -15,19 +16,32 @@ import kotlin.math.*
 import kotlin.random.Random
 import kotlin.system.measureTimeMillis
 
+val yeef = { y: SimpleMatrix ->
+    val dy = SimpleMatrix(4, 1)
+
+    dy[0] = y[1].pow(2.0) + y[1] / (y[0] + 1000)
+    dy[1] = y[0].pow(y[1] / 1000.0) + y[3] * y[2]
+    dy[2] = y[2]*y[3]*y[0]/y[1]
+    dy[3] = y[0]*log(y[3], 2.0)+y[1]
+
+    dy
+}
 
 fun main() {
-    val modelInfo = T7ModelCreator().createModel(1)
+    val modelInfo = T101ModelCreator().createModel(8)
 
-    modelInfo.lumpingMatrix.setRow(0, 0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    val costCalculator = CostCalculator(MonteCarloMeanCalculator( modelInfo.lumpingMatrix.numCols(), 0.05), modelInfo.function)
 
-    val derivativeCalculator = DerivativeCalculator(MonteCarloMeanCalculator(modelInfo.lumpingMatrix.numCols(), 0.5), modelInfo.function)
-    val costCalculator = CostCalculator(MonteCarloMeanCalculator(modelInfo.lumpingMatrix.numCols(), 0.05), modelInfo.function)
+    val pso = GeneralPSO(modelInfo, 1, 200, PSOInfo(10000), costCalculator)
 
-    val gs  = GoldenSectionGD(modelInfo, derivativeCalculator, costCalculator, 1.0).apply { lockedRowCount = 1 }
+    val file = File("Big.txt")
 
-    repeat(100) {
-        gs.iterate()
+    val startTime = System.currentTimeMillis()
+
+    while (true) {
+        pso.iterate()
+
+        file.appendText("${System.currentTimeMillis() - startTime} ${pso.bestCost}\n")
     }
 }
 

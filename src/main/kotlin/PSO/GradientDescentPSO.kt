@@ -6,13 +6,6 @@ import utility.*
 class GradientDescentParticle<GDType>(columns: Int, rows: Int, bounds: OpenEndDoubleRange, factory: () -> GDType) : Particle(columns, rows, bounds) where GDType : GradientDescent {
     val gd = factory().apply { updateGradient = false }
     var plateauCount = 0
-
-    override var bestCost: Double = Double.MAX_VALUE
-        get() = field
-        set(value) {
-            field = value
-            plateauCount = 0
-        }
 }
 
 class GradientDescentPSO<GDType>(modelInfo: ModelInfo, swarmCount: Int, particleCount: Int, gdFactory: () -> GDType, costCalculator: CostCalculator,

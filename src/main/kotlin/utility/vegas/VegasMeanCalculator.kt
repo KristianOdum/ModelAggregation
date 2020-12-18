@@ -3,10 +3,7 @@ package utility.vegas
 import Average
 import org.ejml.simple.SimpleMatrix
 import utility.*
-import kotlin.math.abs
-import kotlin.math.log2
-import kotlin.math.pow
-import kotlin.math.roundToInt
+import kotlin.math.*
 import kotlin.random.Random
 
 class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculator(dimensionCount, tolerance) {
@@ -51,7 +48,10 @@ class VegasMeanCalculator(dimensionCount: Int, tolerance: Double) : MeanCalculat
                 val c = evalpoint(x)
                 var sp = 1.0
 
+                val pprod = partitions.withIndex().map { increments[it.index][it.value].size }.fold(1.0) { acc, e -> acc * e }
+
                 for ((dim, pi) in partitions.withIndex()) {
+                    val f_i = (c.pow(dimensionCount) / (pprod / increments[dim][pi].size).pow(dimensionCount)).pow(1 / dimensionCount)
                     fs[dim][pi].add(c)
                     sp *= increments[dim][pi].size
                 }
