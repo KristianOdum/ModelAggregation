@@ -1,6 +1,8 @@
 package utility
 
 import org.ejml.simple.SimpleMatrix
+import kotlin.math.abs
+import kotlin.math.pow
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -159,4 +161,53 @@ fun SimpleMatrix.withValues(vararg values: Double): SimpleMatrix {
         m[i] = values[i]
     }
     return m
+}
+
+fun SimpleMatrix.multiplyRow(row: Int, value: Double){
+    for(i in 0 until numCols()){
+        this[row,i] *= value
+    }
+}
+fun SimpleMatrix.subtractRowByRow(row1: Int, row2: Int, value: Double = 1.0){
+    for(i in 0 until numCols()){
+        this[row1,i] -= this[row2,i] * value
+    }
+}
+
+fun SimpleMatrix.swapRows(row1: Int, row2:Int){
+    if(row1 >= numRows() || row2 >= numRows())
+        throw IllegalArgumentException("Index of row is out of bound")
+
+    for(i in 0 until numCols()){
+        val temp = this[row1,i]
+        this[row1,i] = this[row2,i]
+        this[row2,i] = temp
+    }
+}
+
+// Reduced Row Echelon Form (Gauss-Jordan Elimination)
+fun SimpleMatrix.RREF() : SimpleMatrix{
+    val v = SimpleMatrix(this)
+
+    for(i in 0 until v.numRows()){
+        var max = i
+
+        for(j in i+1 until v.numRows()){
+            if(abs(v[j,i]) > abs(v[max,i])){
+                max = j
+            }
+        }
+        v.swapRows(i,max)
+
+        v.multiplyRow(i,v[i,i].pow(-1))
+        for(j in i+1 until v.numRows()){
+            v.subtractRowByRow(j, i, v[j,i] / v[i,i])
+        }
+    }
+    for(i in 1 until v.numRows()){
+        for(j in i-1 downTo 0){
+            v.subtractRowByRow(j,i,v[j,i])
+        }
+    }
+    return v
 }
