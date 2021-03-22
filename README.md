@@ -1,0 +1,2 @@
+# Model Aggregation
+This was our 5th semester project. It is about using optimizations techniques to find lumping matrixes for systems of ODEs. For more details please see `report.pdf`. In this project we used gradient descent and particle swarm optimization. Within gradient descent we explored different techniques for determining the learning step: golden section search, quadratic interpolation optimization, RMSProp, ADAM, MOMENTUM and modified dynamically scaled versions of the last 3.
